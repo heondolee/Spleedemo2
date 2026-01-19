@@ -12,15 +12,11 @@ export default function App() {
     right: string | null;
   }>({
     left: null,
-    right: '하루 계획' // 디폴트는 오른쪽
+    right: null // 디폴트도 null로 변경
   });
 
-  // 앱시트 목록 (임시 데이터)
-  const [appSheets] = useState([
-    { id: '1', name: '하루 계획', isNew: false },
-    { id: '2', name: '시험 관리', isNew: true },
-    { id: '3', name: '캘린더', isNew: false },
-  ]);
+  // 앱시트 목록 (빈 배열로 시작)
+  const [appSheets, setAppSheets] = useState<Array<{ id: string; name: string; isNew: boolean }>>([]);
 
   const handleSheetSelect = (sheetName: string, position: 'left' | 'right') => {
     setSelectedSheets(prev => ({
@@ -62,7 +58,51 @@ export default function App() {
       ...prev,
       [focusedSheet]: templateName
     }));
+    
+    // 앱시트 목록에 추가 (중복 체크)
+    const templateExists = appSheets.some(sheet => sheet.name === templateName);
+    if (!templateExists) {
+      setAppSheets(prev => [
+        ...prev,
+        { id: Date.now().toString(), name: templateName, isNew: false }
+      ]);
+    }
+    
     setShowAddSheet(false);
+  };
+
+  const handleDeleteSheet = (sheetId: string) => {
+    // 앱시트 삭제
+    const sheetToDelete = appSheets.find(sheet => sheet.id === sheetId);
+    if (sheetToDelete) {
+      // 선택된 화면에서도 제거
+      setSelectedSheets(prev => ({
+        left: prev.left === sheetToDelete.name ? null : prev.left,
+        right: prev.right === sheetToDelete.name ? null : prev.right
+      }));
+    }
+    setAppSheets(prev => prev.filter(sheet => sheet.id !== sheetId));
+  };
+
+  const handleRenameSheet = (sheetId: string, newName: string) => {
+    // 앱시트 이름 변경
+    const oldSheet = appSheets.find(sheet => sheet.id === sheetId);
+    if (oldSheet) {
+      setAppSheets(prev => 
+        prev.map(sheet => 
+          sheet.id === sheetId ? { ...sheet, name: newName } : sheet
+        )
+      );
+      // 선택된 화면도 업데이트
+      setSelectedSheets(prev => ({
+        left: prev.left === oldSheet.name ? newName : prev.left,
+        right: prev.right === oldSheet.name ? newName : prev.right
+      }));
+    }
+  };
+
+  const handleReorderSheets = (newOrder: Array<{ id: string; name: string; isNew: boolean }>) => {
+    setAppSheets(newOrder);
   };
 
   return (
@@ -96,6 +136,9 @@ export default function App() {
               focusedSheet={focusedSheet}
               showAddSheet={showAddSheet}
               setShowAddSheet={setShowAddSheet}
+              onDeleteSheet={handleDeleteSheet}
+              onRenameSheet={handleRenameSheet}
+              onReorderSheets={handleReorderSheets}
             />
 
             {/* Main Content Area - Fixed Size */}

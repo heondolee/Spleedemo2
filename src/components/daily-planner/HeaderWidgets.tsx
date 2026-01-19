@@ -71,10 +71,10 @@ export function HeaderWidgets({
           onClick={handleDateClick}
           className="flex-1 bg-card border border-border rounded-[12px] p-[12px] text-left hover:bg-accent/50 transition-colors"
         >
-          <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+          <span className="block text-[11px] text-muted-foreground font-medium uppercase tracking-wider text-left">
             DAY
           </span>
-          <p className="text-[14px] font-medium mt-[4px]">
+          <p className="text-[14px] font-medium mt-[4px] text-left">
             {formatDateKorean(dailyInfo.date)}
           </p>
           <input
@@ -92,20 +92,20 @@ export function HeaderWidgets({
           className="bg-card border border-border rounded-[12px] p-[12px] text-left hover:bg-accent/50 transition-colors"
           style={{ width: '100px' }}
         >
-          <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+          <span className="block text-[11px] text-muted-foreground font-medium uppercase tracking-wider text-left">
             D-DAY
           </span>
           {dailyInfo.dday ? (
             <>
-              <p className="text-[16px] font-semibold text-primary mt-[4px]">
+              <p className="text-[16px] font-semibold text-primary mt-[4px] text-left">
                 {formatDday(ddayValue!)}
               </p>
-              <p className="text-[11px] text-muted-foreground truncate">
+              <p className="text-[11px] text-muted-foreground truncate text-left">
                 {dailyInfo.dday.label}
               </p>
             </>
           ) : (
-            <p className="text-[12px] text-muted-foreground mt-[4px]">
+            <p className="text-[12px] text-muted-foreground mt-[4px] text-left">
               설정하기
             </p>
           )}
@@ -113,13 +113,13 @@ export function HeaderWidgets({
 
         {/* 공부시간 위젯 */}
         <div
-          className="bg-card border border-border rounded-[12px] p-[12px]"
+          className="bg-card border border-border rounded-[12px] p-[12px] text-left"
           style={{ width: '120px' }}
         >
-          <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+          <span className="block text-[11px] text-muted-foreground font-medium uppercase tracking-wider text-left">
             공부시간
           </span>
-          <p className="text-[18px] font-semibold text-primary mt-[4px]">
+          <p className="text-[18px] font-semibold text-primary mt-[4px] text-left">
             {studyTime > 0 ? formatStudyTime(studyTime) : '0분'}
           </p>
         </div>
@@ -130,21 +130,30 @@ export function HeaderWidgets({
         onClick={!isEditingQuote ? handleQuoteClick : undefined}
         className="w-full bg-card border border-border rounded-[12px] p-[12px] text-left hover:bg-accent/50 transition-colors"
       >
-        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+        <span className="block text-[11px] text-muted-foreground font-medium uppercase tracking-wider text-left">
           COMMENT
         </span>
         {isEditingQuote ? (
-          <textarea
-            ref={quoteInputRef}
-            className="w-full mt-[4px] text-[13px] bg-transparent border-none outline-none resize-none"
-            value={dailyInfo.dailyQuote}
-            onChange={(e) => onUpdateDailyInfo({ dailyQuote: e.target.value })}
-            onBlur={() => setIsEditingQuote(false)}
-            placeholder="오늘의 한마디를 입력하세요"
-            rows={2}
-          />
+          <div className="mt-[4px]" onClick={(e) => e.stopPropagation()}>
+            <textarea
+              ref={quoteInputRef}
+              className="w-full text-[13px] bg-background border border-border rounded-[4px] px-[8px] py-[4px] outline-none focus:border-primary resize-none text-left"
+              value={dailyInfo.dailyQuote}
+              onChange={(e) => onUpdateDailyInfo({ dailyQuote: e.target.value })}
+              placeholder="오늘의 한마디를 입력하세요"
+              rows={2}
+            />
+            <div className="flex justify-end mt-[8px]">
+              <button
+                className="px-[16px] py-[8px] text-[13px] bg-primary text-primary-foreground rounded-[8px] hover:bg-primary/90 transition-colors"
+                onClick={() => setIsEditingQuote(false)}
+              >
+                완료
+              </button>
+            </div>
+          </div>
         ) : (
-          <p className="text-[13px] mt-[4px] min-h-[40px]">
+          <p className="text-[13px] mt-[4px] min-h-[40px] text-left">
             {dailyInfo.dailyQuote || (
               <span className="text-muted-foreground">클릭하여 입력</span>
             )}
@@ -155,14 +164,14 @@ export function HeaderWidgets({
       {/* D-day 편집 모달 */}
       {isEditingDday && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-background rounded-[16px] p-[20px] shadow-xl" style={{ width: '300px' }}>
-            <h3 className="text-[16px] font-medium mb-[16px]">D-day 설정</h3>
+          <div className="bg-background rounded-[16px] p-[20px] shadow-xl text-left" style={{ width: '300px' }}>
+            <h3 className="text-[16px] font-medium mb-[16px] text-left">D-day 설정</h3>
             <div className="space-y-[12px]">
               <div>
-                <label className="text-[12px] text-muted-foreground">이름</label>
+                <label className="block text-[12px] text-muted-foreground text-left">이름</label>
                 <input
                   type="text"
-                  className="w-full mt-[4px] px-[12px] py-[10px] border border-border rounded-[8px] text-[14px] bg-input-background"
+                  className="w-full mt-[4px] px-[12px] py-[10px] border border-border rounded-[8px] text-[14px] bg-input-background text-left"
                   value={ddayLabel}
                   onChange={(e) => setDdayLabel(e.target.value)}
                   placeholder="예: 수능, 기말고사"
@@ -170,10 +179,10 @@ export function HeaderWidgets({
                 />
               </div>
               <div>
-                <label className="text-[12px] text-muted-foreground">목표 날짜</label>
+                <label className="block text-[12px] text-muted-foreground text-left">목표 날짜</label>
                 <input
                   type="date"
-                  className="w-full mt-[4px] px-[12px] py-[10px] border border-border rounded-[8px] text-[14px] bg-input-background"
+                  className="w-full mt-[4px] px-[12px] py-[10px] border border-border rounded-[8px] text-[14px] bg-input-background text-left"
                   value={ddayDate}
                   onChange={(e) => setDdayDate(e.target.value)}
                 />

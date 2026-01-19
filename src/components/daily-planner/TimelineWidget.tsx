@@ -214,16 +214,16 @@ export function TimelineWidget({
         {hours.map((_, i) => (
           <div
             key={`hline-${i}`}
-            className="absolute left-0 right-0 border-b border-border/30"
+            className="absolute left-0 right-0 border-b border-border/50"
             style={{ top: `${(i + 1) * ROW_HEIGHT - 1}px` }}
           />
         ))}
-        {/* 세로선 (10분 단위) */}
+        {/* 세로선 (10분 단위) - 5개 라인으로 6개 셀 구분 */}
         {[1, 2, 3, 4, 5].map(j => (
           <div
             key={`vline-${j}`}
-            className="absolute top-0 bottom-0 border-l border-border/30"
-            style={{ left: `${j * CELL_WIDTH}px` }}
+            className="absolute top-0 border-l border-border/50"
+            style={{ left: `${j * CELL_WIDTH}px`, height: `${totalHeight}px` }}
           />
         ))}
       </>

@@ -42,6 +42,18 @@ export function HeaderWidgets({
     }
   };
 
+  const goToPreviousDay = () => {
+    const current = new Date(dailyInfo.date);
+    current.setDate(current.getDate() - 1);
+    onDateChange(current.toISOString().split('T')[0]);
+  };
+
+  const goToNextDay = () => {
+    const current = new Date(dailyInfo.date);
+    current.setDate(current.getDate() + 1);
+    onDateChange(current.toISOString().split('T')[0]);
+  };
+
   const handleDdayClick = () => {
     setDdayLabel(dailyInfo.dday?.label || '');
     setDdayDate(dailyInfo.dday?.targetDate || '');
@@ -67,16 +79,40 @@ export function HeaderWidgets({
       {/* 상단 위젯 행: DAY / D-DAY / 공부시간 */}
       <div className="flex gap-[8px]">
         {/* DAY 위젯 */}
-        <button
-          onClick={handleDateClick}
-          className="flex-1 bg-card border border-border rounded-[12px] p-[12px] text-left hover:bg-accent/50 transition-colors"
-        >
-          <span className="block text-[11px] text-muted-foreground font-medium uppercase tracking-wider text-left">
-            DAY
-          </span>
-          <p className="text-[14px] font-medium mt-[4px] text-left">
-            {formatDateKorean(dailyInfo.date)}
-          </p>
+        <div className="flex-1 bg-card border border-border rounded-[12px] p-[12px] flex items-center">
+          {/* 이전 날짜 화살표 */}
+          <button
+            onClick={goToPreviousDay}
+            className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors flex-shrink-0"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+
+          {/* 날짜 표시 (클릭 시 날짜 선택) */}
+          <button
+            onClick={handleDateClick}
+            className="flex-1 text-center hover:bg-accent/50 rounded-[8px] py-[4px] transition-colors"
+          >
+            <span className="block text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+              DAY
+            </span>
+            <p className="text-[14px] font-medium mt-[2px]">
+              {formatDateKorean(dailyInfo.date)}
+            </p>
+          </button>
+
+          {/* 다음 날짜 화살표 */}
+          <button
+            onClick={goToNextDay}
+            className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors flex-shrink-0"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
           <input
             ref={dateInputRef}
             type="date"
@@ -84,7 +120,7 @@ export function HeaderWidgets({
             value={dailyInfo.date}
             onChange={handleDateChange}
           />
-        </button>
+        </div>
 
         {/* D-DAY 위젯 */}
         <button

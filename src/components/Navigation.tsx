@@ -80,7 +80,7 @@ export function Navigation({
         </div>
 
         {/* Sheet List */}
-        <div className="flex-1 overflow-y-auto px-[8px]">
+        <div className="flex-1 overflow-y-auto px-[8px] flex flex-col gap-[4px]">
           {appSheets.map((sheet) => {
             const isLeftSelected = selectedSheets.left === sheet.name;
             const isRightSelected = selectedSheets.right === sheet.name;
@@ -110,9 +110,9 @@ export function Navigation({
                   )}
                 </div>
 
-                {/* Right: Position Indicators - Split Screen Icon (only if sheet is selected) */}
-                {isAnySelected && (
-                  <div className="flex items-center">
+                {/* Right: Position Indicators - Fixed width to prevent layout shift */}
+                <div className="flex items-center justify-end" style={{ width: '24px' }}>
+                  {isAnySelected && (
                     <svg 
                       width="24" 
                       height="24" 
@@ -147,8 +147,8 @@ export function Navigation({
                         fillOpacity={isRightSelected ? '0.3' : '0'}
                       />
                     </svg>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             );
           })}

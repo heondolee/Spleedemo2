@@ -87,7 +87,7 @@ export default function App() {
               <div 
                 onClick={() => handleSheetClick('left')}
                 className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
-                  focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
+                  isNavExpanded && focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
                 }`}
                 style={{ width: '577px' }}
               >
@@ -116,7 +116,7 @@ export default function App() {
               <div 
                 onClick={() => handleSheetClick('right')}
                 className={`h-full bg-card transition-all duration-200 relative ${
-                  focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
+                  isNavExpanded && focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
                 }`}
                 style={{ width: '577px' }}
               >

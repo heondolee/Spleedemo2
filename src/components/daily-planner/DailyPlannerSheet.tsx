@@ -7,6 +7,9 @@ interface DailyPlannerSheetProps {
   initialDate?: string;
 }
 
+// Timeline 너비: Plan(6*20) + Time(32) + Done(6*20) = 272px
+const TIMELINE_WIDTH = 272;
+
 export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
   const {
     data,
@@ -37,8 +40,8 @@ export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
 
       {/* 하단 메인 영역: TASKS + TIMELINE */}
       <div className="flex flex-1 min-h-0 gap-[8px] px-[12px] pb-[12px]">
-        {/* TASKS 위젯 */}
-        <div style={{ width: '200px' }}>
+        {/* TASKS 위젯 - 남은 공간 사용 */}
+        <div className="flex-1 min-w-0">
           <TasksWidget
             subjects={data.subjects}
             todos={data.todos}
@@ -52,8 +55,8 @@ export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
           />
         </div>
 
-        {/* TIMELINE 위젯 */}
-        <div className="flex-1">
+        {/* TIMELINE 위젯 - 고정 너비, 오른쪽 정렬 */}
+        <div className="flex-shrink-0" style={{ width: `${TIMELINE_WIDTH}px` }}>
           <TimelineWidget
             timelineBlocks={data.timelineBlocks}
             subjects={data.subjects}

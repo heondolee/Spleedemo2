@@ -37,10 +37,10 @@ export interface DailyPlannerData {
   timelineBlocks: TimelineBlock[];
 }
 
-// 타임라인 상수 (6:00 ~ 다음날 6:00, 24시간)
+// 타임라인 상수 (6:00 ~ 다음날 4:00, 22시간)
 export const TIMELINE_START_HOUR = 6;
-export const TIMELINE_END_HOUR = 30; // 다음날 6:00 (6 + 24)
-export const TIMELINE_TOTAL_HOURS = 24;
+export const TIMELINE_END_HOUR = 28; // 다음날 4:00 (6 + 22)
+export const TIMELINE_TOTAL_HOURS = 22;
 export const MINUTES_PER_HOUR = 60;
 export const TIMELINE_START_MINUTES = TIMELINE_START_HOUR * MINUTES_PER_HOUR; // 360
 export const TIMELINE_END_MINUTES = TIMELINE_END_HOUR * MINUTES_PER_HOUR; // 1800

@@ -156,7 +156,7 @@ export function TimelineWidget({
   const planBlocks = timelineBlocks.filter(b => b.type === 'plan');
   const doneBlocks = timelineBlocks.filter(b => b.type === 'done');
 
-  // 시간 배열 (6~23, 0~5 = 다음날)
+  // 시간 배열 (6~23, 0~3 = 다음날)
   const hours = Array.from({ length: TIMELINE_TOTAL_HOURS }, (_, i) => {
     return (TIMELINE_START_HOUR + i) % 24;
   });
@@ -191,7 +191,7 @@ export function TimelineWidget({
           {/* 라벨 */}
           {height > 16 && (
             <div className="absolute inset-x-[2px] top-[2px] bottom-[2px] overflow-hidden">
-              <span className="text-[10px] text-white font-medium truncate block">
+              <span className="text-[10px] text-white font-medium truncate block text-left">
                 {block.label || getTodoLabel(block.todoId)}
               </span>
             </div>
@@ -207,15 +207,15 @@ export function TimelineWidget({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden">
+    <div className="bg-card border border-border rounded-[12px] flex flex-col h-full overflow-hidden">
       {/* 헤더 */}
-      <div className="flex border-b border-border">
+      <div className="flex border-b border-border flex-shrink-0">
         {/* Plan 헤더 */}
         <div className="flex border-r border-border" style={{ width: `${6 * CELL_WIDTH}px` }}>
           {[10, 20, 30, 40, 50, 60].map(min => (
             <div
               key={`plan-${min}`}
-              className="flex-1 text-center text-[10px] text-muted-foreground py-[6px] border-r border-border/50 last:border-r-0"
+              className="flex-1 text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] border-r border-border/30 last:border-r-0"
             >
               {min}
             </div>
@@ -228,7 +228,7 @@ export function TimelineWidget({
           {[10, 20, 30, 40, 50, 60].map(min => (
             <div
               key={`done-${min}`}
-              className="flex-1 text-center text-[10px] text-muted-foreground py-[6px] border-r border-border/50 last:border-r-0"
+              className="flex-1 text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] border-r border-border/30 last:border-r-0"
             >
               {min}
             </div>
@@ -241,29 +241,28 @@ export function TimelineWidget({
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden"
       >
-        <div className="flex" style={{ height: `${totalHeight}px` }}>
+        <div className="flex relative" style={{ height: `${totalHeight}px` }}>
           {/* Plan 열 */}
           <div
             className="relative border-r border-border"
             style={{ width: `${6 * CELL_WIDTH}px` }}
             onClick={(e) => handleColumnClick(e, 'plan')}
           >
-            {/* 격자 */}
-            {hours.map((hour, i) => (
+            {/* 세로 격자선 (전체 높이) */}
+            {[1, 2, 3, 4, 5].map(j => (
               <div
-                key={`plan-grid-${i}`}
-                className="absolute left-0 right-0 border-b border-border/50"
-                style={{ top: `${i * ROW_HEIGHT}px`, height: `${ROW_HEIGHT}px` }}
-              >
-                {/* 10분 단위 세로선 */}
-                {[1, 2, 3, 4, 5].map(j => (
-                  <div
-                    key={j}
-                    className="absolute top-0 bottom-0 border-l border-border/30"
-                    style={{ left: `${j * CELL_WIDTH}px` }}
-                  />
-                ))}
-              </div>
+                key={`plan-vline-${j}`}
+                className="absolute top-0 bottom-0 border-l border-border/30"
+                style={{ left: `${j * CELL_WIDTH}px` }}
+              />
+            ))}
+            {/* 가로 격자선 (시간별) */}
+            {hours.map((_, i) => (
+              <div
+                key={`plan-hline-${i}`}
+                className="absolute left-0 right-0 border-b border-border/30"
+                style={{ top: `${(i + 1) * ROW_HEIGHT}px` }}
+              />
             ))}
             {/* 블록들 */}
             {renderBlocks(planBlocks)}
@@ -271,13 +270,13 @@ export function TimelineWidget({
 
           {/* Time 열 */}
           <div
-            className="relative border-r border-border bg-accent/30"
+            className="relative border-r border-border bg-accent/20"
             style={{ width: '32px' }}
           >
             {hours.map((hour, i) => (
               <div
                 key={`time-${i}`}
-                className="absolute left-0 right-0 flex items-center justify-center border-b border-border/50"
+                className="absolute left-0 right-0 flex items-center justify-center border-b border-border/30"
                 style={{ top: `${i * ROW_HEIGHT}px`, height: `${ROW_HEIGHT}px` }}
               >
                 <span className="text-[11px] text-muted-foreground">
@@ -293,22 +292,21 @@ export function TimelineWidget({
             style={{ width: `${6 * CELL_WIDTH}px` }}
             onClick={(e) => handleColumnClick(e, 'done')}
           >
-            {/* 격자 */}
-            {hours.map((hour, i) => (
+            {/* 세로 격자선 (전체 높이) */}
+            {[1, 2, 3, 4, 5].map(j => (
               <div
-                key={`done-grid-${i}`}
-                className="absolute left-0 right-0 border-b border-border/50"
-                style={{ top: `${i * ROW_HEIGHT}px`, height: `${ROW_HEIGHT}px` }}
-              >
-                {/* 10분 단위 세로선 */}
-                {[1, 2, 3, 4, 5].map(j => (
-                  <div
-                    key={j}
-                    className="absolute top-0 bottom-0 border-l border-border/30"
-                    style={{ left: `${j * CELL_WIDTH}px` }}
-                  />
-                ))}
-              </div>
+                key={`done-vline-${j}`}
+                className="absolute top-0 bottom-0 border-l border-border/30"
+                style={{ left: `${j * CELL_WIDTH}px` }}
+              />
+            ))}
+            {/* 가로 격자선 (시간별) */}
+            {hours.map((_, i) => (
+              <div
+                key={`done-hline-${i}`}
+                className="absolute left-0 right-0 border-b border-border/30"
+                style={{ top: `${(i + 1) * ROW_HEIGHT}px` }}
+              />
             ))}
             {/* 블록들 */}
             {renderBlocks(doneBlocks)}

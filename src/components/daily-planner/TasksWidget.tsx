@@ -79,7 +79,7 @@ export function TasksWidget({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden">
+    <div className="bg-card border border-border rounded-[12px] flex flex-col h-full overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-[12px] py-[10px] border-b border-border">
         <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from './components/Navigation';
-import { SheetView } from './components/SheetView';
 import { AddAppSheetPage } from './components/AddAppSheetPage';
+import { DailyPlannerSheet } from './components/daily-planner';
 
 // localStorage 키 상수
 const STORAGE_KEYS = {
@@ -304,7 +304,7 @@ export default function App() {
             {/* Main Content Area - Fixed Size */}
             <div className="w-full h-full flex">
               {/* Left Sheet */}
-              <div 
+              <div
                 onClick={() => handleSheetClick('left')}
                 className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
                   isNavExpanded && focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
@@ -320,6 +320,10 @@ export default function App() {
                     </div>
                   </div>
                 )}
+                {/* Sheet Content */}
+                {selectedSheets.left === '하루 계획' && (
+                  <DailyPlannerSheet />
+                )}
               </div>
 
               {/* Divider (if both sheets selected) */}
@@ -328,7 +332,7 @@ export default function App() {
               )}
 
               {/* Right Sheet */}
-              <div 
+              <div
                 onClick={() => handleSheetClick('right')}
                 className={`h-full bg-card transition-all duration-200 relative ${
                   isNavExpanded && focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
@@ -343,6 +347,10 @@ export default function App() {
                       </span>
                     </div>
                   </div>
+                )}
+                {/* Sheet Content */}
+                {selectedSheets.right === '하루 계획' && (
+                  <DailyPlannerSheet />
                 )}
               </div>
             </div>

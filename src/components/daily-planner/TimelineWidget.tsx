@@ -206,40 +206,72 @@ export function TimelineWidget({
     });
   };
 
+  // 격자 셀 렌더링 (가로선 + 세로선)
+  const renderGrid = () => {
+    return (
+      <>
+        {/* 가로선 (시간별) */}
+        {hours.map((_, i) => (
+          <div
+            key={`hline-${i}`}
+            className="absolute left-0 right-0 border-b border-border/30"
+            style={{ top: `${(i + 1) * ROW_HEIGHT - 1}px` }}
+          />
+        ))}
+        {/* 세로선 (10분 단위) */}
+        {[1, 2, 3, 4, 5].map(j => (
+          <div
+            key={`vline-${j}`}
+            className="absolute top-0 bottom-0 border-l border-border/30"
+            style={{ left: `${j * CELL_WIDTH}px` }}
+          />
+        ))}
+      </>
+    );
+  };
+
   return (
-    <div className="bg-card border border-border rounded-[12px] flex flex-col h-full overflow-hidden">
+    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden">
       {/* 헤더 */}
       <div className="flex border-b border-border flex-shrink-0">
         {/* Plan 헤더 */}
-        <div className="flex border-r border-border" style={{ width: `${6 * CELL_WIDTH}px` }}>
-          {[10, 20, 30, 40, 50, 60].map(min => (
-            <div
-              key={`plan-${min}`}
-              className="flex-1 text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] border-r border-border/30 last:border-r-0"
-            >
-              {min}
-            </div>
-          ))}
+        <div className="border-r border-border" style={{ width: `${6 * CELL_WIDTH}px` }}>
+          <div className="flex">
+            {[10, 20, 30, 40, 50, 60].map((min, i) => (
+              <div
+                key={`plan-${min}`}
+                className={`flex-1 text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] ${
+                  i < 5 ? 'border-r border-border/30' : ''
+                }`}
+              >
+                {min}
+              </div>
+            ))}
+          </div>
         </div>
         {/* Time 헤더 (빈칸) */}
         <div className="border-r border-border" style={{ width: '32px' }} />
         {/* Done 헤더 */}
-        <div className="flex" style={{ width: `${6 * CELL_WIDTH}px` }}>
-          {[10, 20, 30, 40, 50, 60].map(min => (
-            <div
-              key={`done-${min}`}
-              className="flex-1 text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] border-r border-border/30 last:border-r-0"
-            >
-              {min}
-            </div>
-          ))}
+        <div style={{ width: `${6 * CELL_WIDTH}px` }}>
+          <div className="flex">
+            {[10, 20, 30, 40, 50, 60].map((min, i) => (
+              <div
+                key={`done-${min}`}
+                className={`flex-1 text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] ${
+                  i < 5 ? 'border-r border-border/30' : ''
+                }`}
+              >
+                {min}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* 타임라인 본체 */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden"
+        className="overflow-y-auto overflow-x-hidden"
       >
         <div className="flex relative" style={{ height: `${totalHeight}px` }}>
           {/* Plan 열 */}
@@ -248,23 +280,7 @@ export function TimelineWidget({
             style={{ width: `${6 * CELL_WIDTH}px` }}
             onClick={(e) => handleColumnClick(e, 'plan')}
           >
-            {/* 세로 격자선 (전체 높이) */}
-            {[1, 2, 3, 4, 5].map(j => (
-              <div
-                key={`plan-vline-${j}`}
-                className="absolute top-0 bottom-0 border-l border-border/30"
-                style={{ left: `${j * CELL_WIDTH}px` }}
-              />
-            ))}
-            {/* 가로 격자선 (시간별) */}
-            {hours.map((_, i) => (
-              <div
-                key={`plan-hline-${i}`}
-                className="absolute left-0 right-0 border-b border-border/30"
-                style={{ top: `${(i + 1) * ROW_HEIGHT}px` }}
-              />
-            ))}
-            {/* 블록들 */}
+            {renderGrid()}
             {renderBlocks(planBlocks)}
           </div>
 
@@ -276,8 +292,8 @@ export function TimelineWidget({
             {hours.map((hour, i) => (
               <div
                 key={`time-${i}`}
-                className="absolute left-0 right-0 flex items-center justify-center border-b border-border/30"
-                style={{ top: `${i * ROW_HEIGHT}px`, height: `${ROW_HEIGHT}px` }}
+                className="flex items-center justify-center border-b border-border/30"
+                style={{ height: `${ROW_HEIGHT}px` }}
               >
                 <span className="text-[11px] text-muted-foreground">
                   {formatHourLabel(hour)}
@@ -292,23 +308,7 @@ export function TimelineWidget({
             style={{ width: `${6 * CELL_WIDTH}px` }}
             onClick={(e) => handleColumnClick(e, 'done')}
           >
-            {/* 세로 격자선 (전체 높이) */}
-            {[1, 2, 3, 4, 5].map(j => (
-              <div
-                key={`done-vline-${j}`}
-                className="absolute top-0 bottom-0 border-l border-border/30"
-                style={{ left: `${j * CELL_WIDTH}px` }}
-              />
-            ))}
-            {/* 가로 격자선 (시간별) */}
-            {hours.map((_, i) => (
-              <div
-                key={`done-hline-${i}`}
-                className="absolute left-0 right-0 border-b border-border/30"
-                style={{ top: `${(i + 1) * ROW_HEIGHT}px` }}
-              />
-            ))}
-            {/* 블록들 */}
+            {renderGrid()}
             {renderBlocks(doneBlocks)}
           </div>
         </div>

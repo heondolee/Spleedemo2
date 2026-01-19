@@ -934,6 +934,16 @@
     }
   }
 
+  .bg-primary\/90 {
+    background-color: var(--primary);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-primary\/90 {
+      background-color: color-mix(in oklab, var(--primary) 90%, transparent);
+    }
+  }
+
   .bg-purple-500 {
     background-color: var(--color-purple-500);
   }

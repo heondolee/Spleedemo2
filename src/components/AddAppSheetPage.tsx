@@ -1,4 +1,4 @@
-import { X, BookOpen, Calendar, Target, Clock, FileText, Grid, ArrowLeft, Save } from 'lucide-react';
+import { X, BookOpen, Calendar, Target, Clock, FileText, Grid, ArrowLeft, Save, Check } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { ScrollableContainer } from './ScrollableContainer';
 
@@ -161,6 +161,12 @@ export function AddAppSheetPage({
     if (selectedTemplate && !isTemplateDisabled(selectedTemplate)) {
       onSelectTemplate(selectedTemplate.name);
     }
+  };
+
+  // 템플릿이 이미 저장되어 있는지 확인하는 함수
+  const isTemplateSaved = (template: Template): boolean => {
+    if (!savedTemplates[selectedCategory]) return false;
+    return savedTemplates[selectedCategory].some(saved => saved.name === template.name);
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -385,16 +391,25 @@ export function AddAppSheetPage({
                       
                       {/* Save Button - Show only for categories with existing sheets */}
                       {isCategoryDisabled(selectedCategory) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSaveTemplate(selectedCategory, template.name, template);
-                          }}
-                          className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
-                          title="템플릿 저장"
-                        >
-                          <Save className="w-[14px] h-[14px]" />
-                        </button>
+                        isTemplateSaved(template) ? (
+                          <div
+                            className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-primary/90 backdrop-blur-sm text-primary-foreground z-10"
+                            title="저장됨"
+                          >
+                            <Check className="w-[14px] h-[14px]" />
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSaveTemplate(selectedCategory, template.name, template);
+                            }}
+                            className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
+                            title="템플릿 저장"
+                          >
+                            <Save className="w-[14px] h-[14px]" />
+                          </button>
+                        )
                       )}
                     </div>
                   );
@@ -444,16 +459,25 @@ export function AddAppSheetPage({
                       
                       {/* Save Button - Show only for categories with existing sheets */}
                       {isCategoryDisabled(selectedCategory) && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSaveTemplate(selectedCategory, template.name, template);
-                          }}
-                          className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
-                          title="템플릿 저장"
-                        >
-                          <Save className="w-[14px] h-[14px]" />
-                        </button>
+                        isTemplateSaved(template) ? (
+                          <div
+                            className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-primary/90 backdrop-blur-sm text-primary-foreground z-10"
+                            title="저장됨"
+                          >
+                            <Check className="w-[14px] h-[14px]" />
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSaveTemplate(selectedCategory, template.name, template);
+                            }}
+                            className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
+                            title="템플릿 저장"
+                          >
+                            <Save className="w-[14px] h-[14px]" />
+                          </button>
+                        )
                       )}
                     </div>
                   );

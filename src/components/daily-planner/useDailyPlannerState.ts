@@ -130,11 +130,15 @@ export function useDailyPlannerState(initialDate?: string) {
 
   // Todo 관련 함수들
   const addTodo = useCallback((subjectId: string, content: string) => {
+    // 랜덤 색상 선택
+    const randomColor = SUBJECT_COLORS[Math.floor(Math.random() * SUBJECT_COLORS.length)];
+
     const newTodo: Todo = {
       id: generateId(),
       subjectId,
       content,
       isCompleted: false,
+      color: randomColor,
     };
 
     setData(prev => ({

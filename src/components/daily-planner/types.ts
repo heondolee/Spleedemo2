@@ -9,6 +9,7 @@ export interface Todo {
   subjectId: string;
   content: string;
   isCompleted: boolean;
+  color: string;
 }
 
 export interface TimelineBlock {

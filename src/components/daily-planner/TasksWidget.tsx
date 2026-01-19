@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Subject, Todo } from './types';
+import { Subject, Todo, SUBJECT_COLORS } from './types';
 
 interface TasksWidgetProps {
   subjects: Subject[];
@@ -37,6 +37,10 @@ export function TasksWidget({
   const [swipedTodoId, setSwipedTodoId] = useState<string | null>(null);
   const [swipedSubjectId, setSwipedSubjectId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
+
+  // 색상 선택 상태
+  const [colorPickerTodoId, setColorPickerTodoId] = useState<string | null>(null);
+  const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; right: number } | null>(null);
 
   const subjectInputRef = useRef<HTMLInputElement>(null);
   const todoInputRef = useRef<HTMLInputElement>(null);
@@ -117,6 +121,12 @@ export function TasksWidget({
 
   // 스와이프 핸들러
   const handleSwipeStart = (e: React.TouchEvent | React.MouseEvent, type: 'todo' | 'subject', id: string) => {
+    // 색상 선택 드롭다운 닫기
+    if (colorPickerTodoId) {
+      setColorPickerTodoId(null);
+      setColorPickerPosition(null);
+    }
+
     // 이미 열린 스와이프가 있으면 닫기
     if (swipedTodoId || swipedSubjectId) {
       setSwipedTodoId(null);
@@ -189,6 +199,8 @@ export function TasksWidget({
     setSwipedTodoId(null);
     setSwipedSubjectId(null);
     setSwipeOffset(0);
+    setColorPickerTodoId(null);
+    setColorPickerPosition(null);
   };
 
   return (
@@ -418,20 +430,42 @@ export function TasksWidget({
                                   </div>
                                 </div>
                               ) : (
-                                <button
-                                  onClick={() => {
-                                    if (isTodoSwiped) {
-                                      closeSwipe();
-                                    } else {
-                                      startEditTodo(todo);
-                                    }
-                                  }}
-                                  className={`flex-1 text-[13px] text-left ${
-                                    todo.isCompleted ? 'line-through text-muted-foreground' : ''
-                                  }`}
-                                >
-                                  {todo.content}
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      if (isTodoSwiped) {
+                                        closeSwipe();
+                                      } else {
+                                        startEditTodo(todo);
+                                      }
+                                    }}
+                                    className={`flex-1 text-[13px] text-left ${
+                                      todo.isCompleted ? 'line-through text-muted-foreground' : ''
+                                    }`}
+                                  >
+                                    {todo.content}
+                                  </button>
+
+                                  {/* 색상 원 버튼 */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (colorPickerTodoId === todo.id) {
+                                        setColorPickerTodoId(null);
+                                        setColorPickerPosition(null);
+                                      } else {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setColorPickerPosition({
+                                          top: rect.bottom + 8,
+                                          right: window.innerWidth - rect.right,
+                                        });
+                                        setColorPickerTodoId(todo.id);
+                                      }
+                                    }}
+                                    className="w-[20px] h-[20px] rounded-full border-2 border-white/50 shadow-sm flex-shrink-0"
+                                    style={{ backgroundColor: todo.color || '#86EFAC' }}
+                                  />
+                                </>
                               )}
                             </div>
                           </div>
@@ -535,6 +569,48 @@ export function TasksWidget({
           </div>
         )}
       </div>
+
+      {/* 색상 선택 드롭다운 - fixed position으로 overflow 문제 해결 */}
+      {colorPickerTodoId && colorPickerPosition && (
+        <>
+          {/* 배경 오버레이 - 클릭하면 닫힘 */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => {
+              setColorPickerTodoId(null);
+              setColorPickerPosition(null);
+            }}
+          />
+          {/* 드롭다운 */}
+          <div
+            className="fixed z-50 bg-card border border-border rounded-[8px] p-[8px] shadow-lg"
+            style={{
+              top: `${colorPickerPosition.top}px`,
+              right: `${colorPickerPosition.right}px`,
+            }}
+          >
+            <div className="grid grid-cols-5 gap-[6px]">
+              {SUBJECT_COLORS.map((color) => {
+                const currentTodo = todos.find(t => t.id === colorPickerTodoId);
+                return (
+                  <button
+                    key={color}
+                    onClick={() => {
+                      onUpdateTodo(colorPickerTodoId, { color });
+                      setColorPickerTodoId(null);
+                      setColorPickerPosition(null);
+                    }}
+                    className={`w-[20px] h-[20px] rounded-full border-2 transition-transform hover:scale-110 ${
+                      currentTodo?.color === color ? 'border-primary' : 'border-transparent'
+                    }`}
+                    style={{ backgroundColor: color }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -35,6 +35,7 @@
       --tw-backdrop-opacity: initial;
       --tw-backdrop-saturate: initial;
       --tw-backdrop-sepia: initial;
+      --tw-duration: initial;
     }
   }
 }
@@ -392,8 +393,8 @@
     top: 16px;
   }
 
-  .top-\[24px\] {
-    top: 24px;
+  .right-\[16px\] {
+    right: 16px;
   }
 
   .bottom-\[8px\] {
@@ -412,20 +413,12 @@
     left: 16px;
   }
 
-  .left-\[24px\] {
-    left: 24px;
-  }
-
-  .z-10 {
-    z-index: 10;
+  .z-40 {
+    z-index: 40;
   }
 
   .z-50 {
     z-index: 50;
-  }
-
-  .mt-\[48px\] {
-    margin-top: 48px;
   }
 
   .mb-\[4px\] {
@@ -537,10 +530,6 @@
     border-radius: 8px;
   }
 
-  .rounded-\[12px\] {
-    border-radius: 12px;
-  }
-
   .rounded-\[24px\] {
     border-radius: 24px;
   }
@@ -561,11 +550,6 @@
   .border-r {
     border-right-style: var(--tw-border-style);
     border-right-width: 1px;
-  }
-
-  .border-dashed {
-    --tw-border-style: dashed;
-    border-style: dashed;
   }
 
   .border-border {
@@ -600,6 +584,10 @@
 
   .bg-border {
     background-color: var(--border);
+  }
+
+  .bg-card {
+    background-color: var(--card);
   }
 
   .bg-primary {
@@ -652,8 +640,8 @@
     padding-block: 2px;
   }
 
-  .py-\[6px\] {
-    padding-block: 6px;
+  .py-\[8px\] {
+    padding-block: 8px;
   }
 
   .py-\[12px\] {
@@ -687,11 +675,6 @@
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
 
-  .shadow-sm {
-    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, #0000001a), 0 1px 2px -1px var(--tw-shadow-color, #0000001a);
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-
   .shadow-xl {
     --tw-shadow: 0 20px 25px -5px var(--tw-shadow-color, #0000001a), 0 8px 10px -6px var(--tw-shadow-color, #0000001a);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -722,6 +705,11 @@
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+
+  .duration-200 {
+    --tw-duration: .2s;
+    transition-duration: .2s;
   }
 
   .ring-inset {
@@ -1008,6 +996,11 @@ html {
 }
 
 @property --tw-backdrop-sepia {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-duration {
   syntax: "*";
   inherits: false
 }

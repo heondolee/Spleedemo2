@@ -4,21 +4,27 @@ interface SheetViewProps {
   isVisible: boolean;
   isNavExpanded: boolean;
   isFocused: boolean;
+  onClick: () => void;
 }
 
-export function SheetView({ sheetName, position, isVisible, isNavExpanded, isFocused }: SheetViewProps) {
+export function SheetView({ sheetName, position, isVisible, isNavExpanded, isFocused, onClick }: SheetViewProps) {
   if (!isVisible || !sheetName) {
     return <div className="flex-1"></div>;
   }
 
   return (
     <div 
-      className={`bg-background p-[24px] relative transition-all ${isFocused && isNavExpanded ? 'ring-2 ring-primary ring-inset' : ''}`}
+      className={`bg-background p-[24px] relative transition-all ${
+        isFocused && isNavExpanded 
+          ? 'ring-[3px] ring-blue-500 ring-inset' 
+          : ''
+      } ${isNavExpanded ? 'cursor-pointer' : ''}`}
       style={{ width: '577px' }} // Fixed half size: 1154 / 2
+      onClick={onClick}
     >
       {/* Floating Title (only when nav is expanded) */}
       {isNavExpanded && (
-        <div className="absolute top-[24px] left-[24px] z-10">
+        <div className={`absolute top-[24px] z-10 ${position === 'left' ? 'right-[24px]' : 'left-[24px]'}`}>
           <div className="bg-background/80 backdrop-blur-sm border border-border rounded-[8px] px-[12px] py-[6px] shadow-sm">
             <h2 className="font-medium" style={{ fontSize: '16px' }}>
               {sheetName}

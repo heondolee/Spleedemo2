@@ -44,6 +44,12 @@ export default function App() {
     }
   };
 
+  const handleSheetClick = (position: 'left' | 'right') => {
+    if (isNavExpanded) {
+      setFocusedSheet(position);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-200 flex items-center justify-center p-8">
       {/* iPad Pro 11" Frame - Landscape - 1194 × 834 px */}
@@ -72,32 +78,75 @@ export default function App() {
               appSheets={appSheets}
               selectedSheets={selectedSheets}
               onSheetSelect={handleSheetSelect}
+              focusedSheet={focusedSheet}
             />
 
             {/* Main Content Area - Fixed Size */}
             <div className="w-full h-full flex">
-              {/* Left Sheet - Fixed Half */}
-              <SheetView 
-                sheetName={selectedSheets.left}
-                position="left"
-                isVisible={!!selectedSheets.left}
-                isNavExpanded={isNavExpanded}
-                isFocused={focusedSheet === 'left'}
-              />
+              {/* Left Sheet */}
+              <div 
+                onClick={() => handleSheetClick('left')}
+                className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
+                  focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
+                }`}
+                style={{ width: '577px' }}
+              >
+                {selectedSheets.left && (
+                  <>
+                    {/* Sheet Title - Only show when nav is expanded */}
+                    {isNavExpanded && (
+                      <div className="absolute top-[16px] right-[16px] z-40">
+                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
+                          <span className="font-medium" style={{ fontSize: '14px' }}>
+                            {selectedSheets.left}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Sheet Content */}
+                    <div className="p-[24px]">
+                      <p style={{ fontSize: '14px' }} className="text-muted-foreground">
+                        {selectedSheets.left} 콘텐츠
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* Divider (if both sheets selected) */}
               {selectedSheets.left && selectedSheets.right && (
                 <div className="w-[1px] bg-border"></div>
               )}
 
-              {/* Right Sheet - Fixed Half */}
-              <SheetView 
-                sheetName={selectedSheets.right}
-                position="right"
-                isVisible={!!selectedSheets.right}
-                isNavExpanded={isNavExpanded}
-                isFocused={focusedSheet === 'right'}
-              />
+              {/* Right Sheet */}
+              <div 
+                onClick={() => handleSheetClick('right')}
+                className={`h-full bg-card transition-all duration-200 relative ${
+                  focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
+                }`}
+                style={{ width: '577px' }}
+              >
+                {selectedSheets.right && (
+                  <>
+                    {/* Sheet Title - Only show when nav is expanded */}
+                    {isNavExpanded && (
+                      <div className="absolute top-[16px] left-[16px] z-40">
+                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
+                          <span className="font-medium" style={{ fontSize: '14px' }}>
+                            {selectedSheets.right}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Sheet Content */}
+                    <div className="p-[24px]">
+                      <p style={{ fontSize: '14px' }} className="text-muted-foreground">
+                        {selectedSheets.right} 콘텐츠
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

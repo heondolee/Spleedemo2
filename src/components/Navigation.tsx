@@ -15,6 +15,7 @@ interface NavigationProps {
     right: string | null;
   };
   onSheetSelect: (sheetName: string, position: 'left' | 'right') => void;
+  focusedSheet: 'left' | 'right';
 }
 
 export function Navigation({ 
@@ -22,39 +23,12 @@ export function Navigation({
   onToggle, 
   appSheets, 
   selectedSheets,
-  onSheetSelect 
+  onSheetSelect,
+  focusedSheet
 }: NavigationProps) {
   const handleSheetClick = (sheetName: string) => {
-    // 이미 선택된 시트인지 확인
-    const isLeftSelected = selectedSheets.left === sheetName;
-    const isRightSelected = selectedSheets.right === sheetName;
-
-    // 빈 자리에 먼저 추가
-    if (!isLeftSelected && !selectedSheets.left) {
-      onSheetSelect(sheetName, 'left');
-    } else if (!isRightSelected && !selectedSheets.right) {
-      onSheetSelect(sheetName, 'right');
-    } else if (isLeftSelected && isRightSelected) {
-      // 양쪽 다 선택되어 있으면 오른쪽만 해제
-      onSheetSelect(sheetName, 'right');
-    } else if (isLeftSelected) {
-      // 왼쪽만 선택되어 있으면 오른쪽에 추가 또는 왼쪽 해제
-      if (!selectedSheets.right) {
-        onSheetSelect(sheetName, 'right');
-      } else {
-        onSheetSelect(sheetName, 'left');
-      }
-    } else if (isRightSelected) {
-      // 오른쪽만 선택되어 있으면 왼쪽에 추가 또는 오른쪽 해제
-      if (!selectedSheets.left) {
-        onSheetSelect(sheetName, 'left');
-      } else {
-        onSheetSelect(sheetName, 'right');
-      }
-    } else {
-      // 둘 다 다른 시트로 차있으면 오른쪽 교체
-      onSheetSelect(sheetName, 'right');
-    }
+    // 현재 포커스된 화면에 해당 시트를 설정 (교체)
+    onSheetSelect(sheetName, focusedSheet);
   };
 
   if (!isExpanded) {
@@ -136,46 +110,41 @@ export function Navigation({
                     )}
                   </div>
                   
-                  {/* Position Indicators - Book Icons */}
-                  <div className="flex">
-                    {isLeftSelected && (
-                      <div 
-                        className="text-primary flex items-center justify-center"
-                        title="왼쪽 화면"
-                      >
-                        <svg 
-                          width="20" 
-                          height="20" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2"
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H12v20H6.5a2.5 2.5 0 0 1 0-5H12" />
-                        </svg>
-                      </div>
-                    )}
-                    {isRightSelected && (
-                      <div 
-                        className="text-primary flex items-center justify-center"
-                        title="오른쪽 화면"
-                      >
-                        <svg 
-                          width="20" 
-                          height="20" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          strokeWidth="2"
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 2h5.5A2.5 2.5 0 0 1 20 4.5v15a2.5 2.5 0 0 1-2.5 2.5H12V2z" />
-                        </svg>
-                      </div>
-                    )}
+                  {/* Position Indicators - Split Screen Icon */}
+                  <div className="flex items-center">
+                    {/* 양쪽 화면을 보여주는 아이콘 (항상 표시) */}
+                    <svg 
+                      width="24" 
+                      height="24" 
+                      viewBox="0 0 24 24" 
+                      fill="none"
+                      className="text-primary"
+                    >
+                      {/* 왼쪽 화면 */}
+                      <rect 
+                        x="3" 
+                        y="5" 
+                        width="8" 
+                        height="14" 
+                        rx="2"
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        fill={(isLeftSelected && focusedSheet === 'left') ? 'currentColor' : 'none'}
+                        fillOpacity={(isLeftSelected && focusedSheet === 'left') ? '0.3' : '0'}
+                      />
+                      {/* 오른쪽 화면 */}
+                      <rect 
+                        x="13" 
+                        y="5" 
+                        width="8" 
+                        height="14" 
+                        rx="2"
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        fill={(isRightSelected && focusedSheet === 'right') ? 'currentColor' : 'none'}
+                        fillOpacity={(isRightSelected && focusedSheet === 'right') ? '0.3' : '0'}
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>

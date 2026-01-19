@@ -1,5 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Subject, Todo, SUBJECT_COLORS } from './types';
+
+// 드래그 중인 데이터를 저장하는 전역 인터페이스
+export interface DragData {
+  todoId: string;
+  subjectId: string;
+  color: string;
+  content: string;
+}
+
+// window 객체에 드래그 데이터 저장 (모듈 간 공유)
+declare global {
+  interface Window {
+    __todoDragData?: DragData | null;
+    __todoDragPosition?: { x: number; y: number } | null;
+    __todoDragActive?: boolean;
+  }
+}
 
 interface TasksWidgetProps {
   subjects: Subject[];
@@ -51,6 +69,13 @@ export function TasksWidget({
   const swipeCurrentX = useRef(0);
   const isSwipingRef = useRef(false);
   const swipeTargetRef = useRef<{ type: 'todo' | 'subject'; id: string } | null>(null);
+
+  // 터치 드래그 상태 (타임라인으로 드래그)
+  const [isDraggingToTimeline, setIsDraggingToTimeline] = useState(false);
+  const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
+  const [draggedTodo, setDraggedTodo] = useState<Todo | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const dragDirectionDecided = useRef(false);
 
   useEffect(() => {
     if (isAddingSubject && subjectInputRef.current) {
@@ -338,40 +363,173 @@ export function TasksWidget({
                               </button>
                             </div>
 
-                            {/* 할일 아이템 - 개별 스와이프 가능 */}
+                            {/* 할일 아이템 - 터치/마우스로 스와이프/드래그 */}
                             <div
-                              className="relative flex items-center gap-[8px] px-[12px] py-[8px] pl-[28px] transition-transform bg-muted"
+                              className="relative flex items-center gap-[8px] px-[12px] py-[8px] pl-[28px] transition-transform bg-muted select-none"
                               style={{
                                 transform: isTodoSwiped ? `translateX(-${swipeOffset}px)` : 'translateX(0)',
                                 transition: isSwipingRef.current ? 'none' : 'transform 0.2s ease-out'
                               }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                touchStartPos.current = { x: e.clientX, y: e.clientY };
+                                dragDirectionDecided.current = false;
+
+                                const handleMouseMove = (moveE: MouseEvent) => {
+                                  if (!touchStartPos.current) return;
+
+                                  const deltaX = moveE.clientX - touchStartPos.current.x;
+                                  const deltaY = moveE.clientY - touchStartPos.current.y;
+
+                                  if (window.__todoDragActive) {
+                                    setDragPosition({ x: moveE.clientX, y: moveE.clientY });
+                                    window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
+                                    window.dispatchEvent(new CustomEvent('todoDragMove', {
+                                      detail: { x: moveE.clientX, y: moveE.clientY }
+                                    }));
+                                    return;
+                                  }
+
+                                  if (!dragDirectionDecided.current && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+                                    dragDirectionDecided.current = true;
+
+                                    if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.5) {
+                                      // 드래그 모드
+                                      window.__todoDragData = {
+                                        todoId: todo.id,
+                                        subjectId: todo.subjectId,
+                                        color: todo.color || '#86EFAC',
+                                        content: todo.content,
+                                      };
+                                      window.__todoDragActive = true;
+                                      window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
+                                      setIsDraggingToTimeline(true);
+                                      setDraggedTodo(todo);
+                                      setDragPosition({ x: moveE.clientX, y: moveE.clientY });
+                                      window.dispatchEvent(new CustomEvent('todoDragMove', {
+                                        detail: { x: moveE.clientX, y: moveE.clientY }
+                                      }));
+                                    }
+                                  }
+                                };
+
+                                const handleMouseUp = () => {
+                                  if (window.__todoDragActive) {
+                                    const pos = window.__todoDragPosition;
+                                    if (pos) {
+                                      // 드롭 이벤트 발생 (동기적으로 처리됨)
+                                      window.dispatchEvent(new CustomEvent('todoDrop', {
+                                        detail: { x: pos.x, y: pos.y }
+                                      }));
+                                    }
+                                    // 이벤트 처리 후 상태 초기화
+                                    setTimeout(() => {
+                                      setIsDraggingToTimeline(false);
+                                      setDraggedTodo(null);
+                                      setDragPosition(null);
+                                      window.__todoDragData = null;
+                                      window.__todoDragActive = false;
+                                      window.__todoDragPosition = null;
+                                    }, 0);
+                                  }
+                                  touchStartPos.current = null;
+                                  dragDirectionDecided.current = false;
+                                  document.removeEventListener('mousemove', handleMouseMove);
+                                  document.removeEventListener('mouseup', handleMouseUp);
+                                };
+
+                                document.addEventListener('mousemove', handleMouseMove);
+                                document.addEventListener('mouseup', handleMouseUp);
+                              }}
                               onTouchStart={(e) => {
                                 e.stopPropagation();
+                                const touch = e.touches[0];
+                                touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+                                dragDirectionDecided.current = false;
                                 handleSwipeStart(e, 'todo', todo.id);
                               }}
                               onTouchMove={(e) => {
                                 e.stopPropagation();
-                                handleSwipeMove(e);
+                                const touch = e.touches[0];
+
+                                if (!touchStartPos.current) return;
+
+                                const deltaX = touch.clientX - touchStartPos.current.x;
+                                const deltaY = touch.clientY - touchStartPos.current.y;
+
+                                // 이미 드래그 모드인 경우
+                                if (window.__todoDragActive) {
+                                  e.preventDefault(); // 스크롤 방지
+                                  setDragPosition({ x: touch.clientX, y: touch.clientY });
+                                  window.__todoDragPosition = { x: touch.clientX, y: touch.clientY };
+                                  window.dispatchEvent(new CustomEvent('todoDragMove', {
+                                    detail: { x: touch.clientX, y: touch.clientY }
+                                  }));
+                                  return;
+                                }
+
+                                // 이미 스와이프 모드로 결정된 경우
+                                if (dragDirectionDecided.current) {
+                                  handleSwipeMove(e);
+                                  return;
+                                }
+
+                                // 방향 결정 (아직 결정되지 않은 경우) - 5px 이상 움직이면 판단
+                                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                                  dragDirectionDecided.current = true;
+
+                                  // 수평 이동이 수직보다 1.5배 이상 크면 스와이프, 그 외는 타임라인 드래그
+                                  if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                                    // 스와이프 모드
+                                    handleSwipeMove(e);
+                                  } else {
+                                    // 타임라인 드래그 모드 시작
+                                    e.preventDefault(); // 스크롤 방지
+                                    window.__todoDragData = {
+                                      todoId: todo.id,
+                                      subjectId: todo.subjectId,
+                                      color: todo.color || '#86EFAC',
+                                      content: todo.content,
+                                    };
+                                    window.__todoDragActive = true;
+                                    window.__todoDragPosition = { x: touch.clientX, y: touch.clientY };
+                                    setIsDraggingToTimeline(true);
+                                    setDraggedTodo(todo);
+                                    setDragPosition({ x: touch.clientX, y: touch.clientY });
+
+                                    // 즉시 이벤트 발생
+                                    window.dispatchEvent(new CustomEvent('todoDragMove', {
+                                      detail: { x: touch.clientX, y: touch.clientY }
+                                    }));
+                                  }
+                                }
                               }}
                               onTouchEnd={(e) => {
                                 e.stopPropagation();
-                                handleSwipeEnd();
-                              }}
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                handleSwipeStart(e, 'todo', todo.id);
-                              }}
-                              onMouseMove={(e) => {
-                                e.stopPropagation();
-                                handleSwipeMove(e);
-                              }}
-                              onMouseUp={(e) => {
-                                e.stopPropagation();
-                                handleSwipeEnd();
-                              }}
-                              onMouseLeave={(e) => {
-                                e.stopPropagation();
-                                handleSwipeEnd();
+
+                                if (isDraggingToTimeline || window.__todoDragActive) {
+                                  // 드롭 이벤트 발생 - window 객체에서 최신 위치 사용
+                                  const pos = window.__todoDragPosition;
+                                  if (pos) {
+                                    window.dispatchEvent(new CustomEvent('todoDrop', {
+                                      detail: { x: pos.x, y: pos.y }
+                                    }));
+                                  }
+                                  // 이벤트 처리 후 상태 초기화
+                                  setTimeout(() => {
+                                    setIsDraggingToTimeline(false);
+                                    setDraggedTodo(null);
+                                    setDragPosition(null);
+                                    window.__todoDragData = null;
+                                    window.__todoDragActive = false;
+                                    window.__todoDragPosition = null;
+                                  }, 0);
+                                } else {
+                                  handleSwipeEnd();
+                                }
+
+                                touchStartPos.current = null;
+                                dragDirectionDecided.current = false;
                               }}
                             >
                               <button
@@ -610,6 +768,25 @@ export function TasksWidget({
             </div>
           </div>
         </>
+      )}
+
+      {/* 터치 드래그 프리뷰 - Portal로 렌더링 */}
+      {isDraggingToTimeline && createPortal(
+        <div
+          className="fixed z-[9999] pointer-events-none"
+          style={{
+            left: dragPosition ? `${dragPosition.x - 40}px` : '50%',
+            top: dragPosition ? `${dragPosition.y - 20}px` : '50%',
+          }}
+        >
+          <div
+            className="px-[16px] py-[8px] rounded-[8px] shadow-lg text-white text-[13px] font-medium border-2 border-white"
+            style={{ backgroundColor: draggedTodo?.color || '#86EFAC' }}
+          >
+            {draggedTodo?.content || '드래그 중...'}
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

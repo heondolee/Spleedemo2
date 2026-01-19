@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   TimelineBlock,
   Subject,
@@ -9,6 +9,16 @@ import {
   TIMELINE_END_MINUTES,
   formatHourLabel,
 } from './types';
+import type { DragData } from './TasksWidget';
+
+// window 타입 확장
+declare global {
+  interface Window {
+    __todoDragData?: DragData | null;
+    __todoDragPosition?: { x: number; y: number } | null;
+    __todoDragActive?: boolean;
+  }
+}
 
 interface TimelineWidgetProps {
   timelineBlocks: TimelineBlock[];
@@ -31,9 +41,122 @@ export function TimelineWidget({
   onDeleteBlock,
 }: TimelineWidgetProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const planColumnRef = useRef<HTMLDivElement>(null);
+  const doneColumnRef = useRef<HTMLDivElement>(null);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState<'top' | 'bottom' | null>(null);
+
+  // 드래그 앤 드롭 프리뷰 상태
+  const [dragPreview, setDragPreview] = useState<{
+    startTime: number;
+    color: string;
+    type: 'plan' | 'done';
+  } | null>(null);
+
+  // Y 좌표를 분 단위로 변환하는 헬퍼 함수
+  const calcMinutesFromY = (localY: number): number => {
+    const minutes = Math.round(localY / (ROW_HEIGHT / 6)) * 10 + TIMELINE_START_MINUTES;
+    return Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES, minutes));
+  };
+
+  // 터치 드래그 이벤트 리스너
+  useEffect(() => {
+    const handleTouchDragMove = (e: CustomEvent<{ x: number; y: number }>) => {
+      const { x, y } = e.detail;
+      const dragData = window.__todoDragData;
+      if (!dragData) return;
+
+      // Plan 열 위에 있는지 확인
+      const planRect = planColumnRef.current?.getBoundingClientRect();
+      if (planRect && x >= planRect.left && x <= planRect.right && y >= planRect.top && y <= planRect.bottom) {
+        const localY = y - planRect.top;
+        const startTime = calcMinutesFromY(localY);
+        setDragPreview({
+          startTime,
+          color: dragData.color,
+          type: 'plan',
+        });
+        return;
+      }
+
+      // Done 열 위에 있는지 확인
+      const doneRect = doneColumnRef.current?.getBoundingClientRect();
+      if (doneRect && x >= doneRect.left && x <= doneRect.right && y >= doneRect.top && y <= doneRect.bottom) {
+        const localY = y - doneRect.top;
+        const startTime = calcMinutesFromY(localY);
+        setDragPreview({
+          startTime,
+          color: dragData.color,
+          type: 'done',
+        });
+        return;
+      }
+
+      // 타임라인 밖이면 프리뷰 제거
+      setDragPreview(null);
+    };
+
+    const handleTouchDrop = (e: CustomEvent<{ x: number; y: number }>) => {
+      const { x, y } = e.detail;
+      const dragData = window.__todoDragData;
+
+      if (!dragData) {
+        setDragPreview(null);
+        return;
+      }
+
+      // Plan 열에 드롭
+      const planRect = planColumnRef.current?.getBoundingClientRect();
+      if (planRect && x >= planRect.left && x <= planRect.right && y >= planRect.top && y <= planRect.bottom) {
+        const localY = y - planRect.top;
+        const startTime = calcMinutesFromY(localY);
+        const endTime = Math.min(startTime + 30, TIMELINE_END_MINUTES);
+
+        onAddBlock({
+          todoId: dragData.todoId,
+          subjectId: dragData.subjectId,
+          startTime,
+          endTime,
+          type: 'plan',
+          label: dragData.content,
+          color: dragData.color,
+        });
+        setDragPreview(null);
+        return;
+      }
+
+      // Done 열에 드롭
+      const doneRect = doneColumnRef.current?.getBoundingClientRect();
+      if (doneRect && x >= doneRect.left && x <= doneRect.right && y >= doneRect.top && y <= doneRect.bottom) {
+        const localY = y - doneRect.top;
+        const startTime = calcMinutesFromY(localY);
+        const endTime = Math.min(startTime + 30, TIMELINE_END_MINUTES);
+
+        onAddBlock({
+          todoId: dragData.todoId,
+          subjectId: dragData.subjectId,
+          startTime,
+          endTime,
+          type: 'done',
+          label: dragData.content,
+          color: dragData.color,
+        });
+        setDragPreview(null);
+        return;
+      }
+
+      setDragPreview(null);
+    };
+
+    window.addEventListener('todoDragMove', handleTouchDragMove as EventListener);
+    window.addEventListener('todoDrop', handleTouchDrop as EventListener);
+
+    return () => {
+      window.removeEventListener('todoDragMove', handleTouchDragMove as EventListener);
+      window.removeEventListener('todoDrop', handleTouchDrop as EventListener);
+    };
+  }, [onAddBlock]);
 
   const dragStartRef = useRef<{ y: number; startTime: number; endTime: number }>({
     y: 0,
@@ -80,6 +203,89 @@ export function TimelineWidget({
       type,
     });
   }, [isDragging, isResizing, onAddBlock]);
+
+  // 드래그 오버 핸들러
+  const handleDragOver = useCallback((e: React.DragEvent, type: 'plan' | 'done') => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const startTime = yToMinutes(y);
+
+    // 전역 드래그 데이터에서 색상 가져오기
+    const dragData = window.__todoDragData;
+    if (dragData) {
+      setDragPreview({
+        startTime,
+        color: dragData.color,
+        type,
+      });
+    }
+  }, []);
+
+  // 드래그 엔터 핸들러
+  const handleDragEnter = useCallback((e: React.DragEvent, type: 'plan' | 'done') => {
+    e.preventDefault();
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const startTime = yToMinutes(y);
+
+    // 전역 드래그 데이터에서 색상 가져오기
+    const dragData = window.__todoDragData;
+    if (dragData) {
+      setDragPreview({
+        startTime,
+        color: dragData.color,
+        type,
+      });
+    }
+  }, []);
+
+  // 드래그 리브 핸들러
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    // 자식 요소로 이동할 때는 무시
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (e.currentTarget.contains(relatedTarget)) return;
+
+    setDragPreview(null);
+  }, []);
+
+  // 드롭 핸들러
+  const handleDrop = useCallback((e: React.DragEvent, type: 'plan' | 'done') => {
+    e.preventDefault();
+    setDragPreview(null);
+
+    try {
+      let data: DragData | null = window.__todoDragData || null;
+
+      // dataTransfer에서도 시도
+      const jsonData = e.dataTransfer.getData('application/json');
+      if (jsonData) {
+        data = JSON.parse(jsonData);
+      }
+
+      if (!data) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const startTime = yToMinutes(y);
+      const endTime = Math.min(startTime + 30, TIMELINE_END_MINUTES); // 30분 = 3칸
+
+      onAddBlock({
+        todoId: data.todoId,
+        subjectId: data.subjectId,
+        startTime,
+        endTime,
+        type,
+        label: data.content,
+        color: data.color,
+      });
+    } catch {
+      // 무시
+    }
+  }, [onAddBlock]);
 
   const handleBlockMouseDown = useCallback((
     e: React.MouseEvent,
@@ -168,17 +374,21 @@ export function TimelineWidget({
       const top = minutesToY(block.startTime);
       const height = minutesToY(block.endTime) - top;
       const isActive = activeBlockId === block.id;
+      // 블록 자체 색상 우선, 없으면 과목 색상 사용
+      const color = block.color || getSubjectColor(block.subjectId);
 
       return (
         <div
           key={block.id}
-          className={`absolute left-[2px] right-[2px] rounded-[4px] cursor-move transition-shadow group ${
-            isActive ? 'shadow-md z-10' : 'hover:shadow-sm'
+          className={`absolute rounded-[4px] cursor-move transition-shadow group ${
+            isActive ? 'shadow-md z-20' : 'hover:shadow-sm z-10'
           }`}
           style={{
             top: `${top}px`,
+            left: '2px',
+            width: `${3 * CELL_WIDTH - 4}px`, // 3칸 = 60px - 4px 여백
             height: `${Math.max(height, 4)}px`,
-            backgroundColor: getSubjectColor(block.subjectId),
+            backgroundColor: color,
           }}
           onMouseDown={(e) => handleBlockMouseDown(e, block, 'move')}
           onDoubleClick={(e) => handleBlockDelete(e, block.id)}
@@ -322,12 +532,28 @@ export function TimelineWidget({
         <div className="flex relative" style={{ height: `${totalHeight}px` }}>
           {/* Plan 열 */}
           <div
+            ref={planColumnRef}
             className="relative flex-shrink-0"
             style={{ width: `${6 * CELL_WIDTH}px`, minWidth: `${6 * CELL_WIDTH}px` }}
             onClick={(e) => handleColumnClick(e, 'plan')}
+            onDragOver={(e) => handleDragOver(e, 'plan')}
+            onDragEnter={(e) => handleDragEnter(e, 'plan')}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, 'plan')}
           >
             {renderGrid()}
             {renderBlocks(planBlocks)}
+            {/* 드래그 프리뷰 */}
+            {dragPreview && dragPreview.type === 'plan' && (
+              <div
+                className="absolute left-[2px] right-[2px] rounded-[4px] pointer-events-none opacity-60"
+                style={{
+                  top: `${minutesToY(dragPreview.startTime)}px`,
+                  height: `${minutesToY(dragPreview.startTime + 30) - minutesToY(dragPreview.startTime)}px`,
+                  backgroundColor: dragPreview.color,
+                }}
+              />
+            )}
           </div>
 
           {/* Time 열 */}
@@ -364,12 +590,28 @@ export function TimelineWidget({
 
           {/* Done 열 */}
           <div
+            ref={doneColumnRef}
             className="relative flex-shrink-0"
             style={{ width: `${6 * CELL_WIDTH}px`, minWidth: `${6 * CELL_WIDTH}px` }}
             onClick={(e) => handleColumnClick(e, 'done')}
+            onDragOver={(e) => handleDragOver(e, 'done')}
+            onDragEnter={(e) => handleDragEnter(e, 'done')}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, 'done')}
           >
             {renderGrid()}
             {renderBlocks(doneBlocks)}
+            {/* 드래그 프리뷰 */}
+            {dragPreview && dragPreview.type === 'done' && (
+              <div
+                className="absolute left-[2px] right-[2px] rounded-[4px] pointer-events-none opacity-60"
+                style={{
+                  top: `${minutesToY(dragPreview.startTime)}px`,
+                  height: `${minutesToY(dragPreview.startTime + 30) - minutesToY(dragPreview.startTime)}px`,
+                  backgroundColor: dragPreview.color,
+                }}
+              />
+            )}
           </div>
 
           {/* 열 구분선 (Plan|Time, Time|Done) */}

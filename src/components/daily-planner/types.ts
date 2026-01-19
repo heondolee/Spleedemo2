@@ -20,6 +20,7 @@ export interface TimelineBlock {
   endTime: number;
   type: 'plan' | 'done';
   label?: string;
+  color?: string; // 블록 색상
 }
 
 export interface DailyInfo {

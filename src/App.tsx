@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Navigation } from './components/Navigation';
 import { SheetView } from './components/SheetView';
+import { AddAppSheetPage } from './components/AddAppSheetPage';
 
 export default function App() {
   const [isNavExpanded, setIsNavExpanded] = useState(true);
   const [focusedSheet, setFocusedSheet] = useState<'left' | 'right'>('right'); // 디폴트: 오른쪽
+  const [showAddSheet, setShowAddSheet] = useState(false); // 앱시트 추가 페이지 표시 여부
   const [selectedSheets, setSelectedSheets] = useState<{
     left: string | null;
     right: string | null;
@@ -50,6 +52,19 @@ export default function App() {
     }
   };
 
+  const handleCloseAddSheet = () => {
+    setShowAddSheet(false);
+  };
+
+  const handleSelectTemplate = (templateName: string) => {
+    // 현재 포커스된 화면에 선택한 템플릿 설정
+    setSelectedSheets(prev => ({
+      ...prev,
+      [focusedSheet]: templateName
+    }));
+    setShowAddSheet(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-200 flex items-center justify-center p-8">
       {/* iPad Pro 11" Frame - Landscape - 1194 × 834 px */}
@@ -79,6 +94,8 @@ export default function App() {
               selectedSheets={selectedSheets}
               onSheetSelect={handleSheetSelect}
               focusedSheet={focusedSheet}
+              showAddSheet={showAddSheet}
+              setShowAddSheet={setShowAddSheet}
             />
 
             {/* Main Content Area - Fixed Size */}
@@ -136,6 +153,13 @@ export default function App() {
                 )}
               </div>
             </div>
+
+            {/* Add Sheet Page - Fullscreen Modal */}
+            <AddAppSheetPage 
+              onClose={handleCloseAddSheet}
+              onSelectTemplate={handleSelectTemplate}
+              isOpen={showAddSheet}
+            />
           </div>
         </div>
 

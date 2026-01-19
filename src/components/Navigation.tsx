@@ -16,6 +16,8 @@ interface NavigationProps {
   };
   onSheetSelect: (sheetName: string, position: 'left' | 'right') => void;
   focusedSheet: 'left' | 'right';
+  showAddSheet: boolean;
+  setShowAddSheet: (show: boolean) => void;
 }
 
 export function Navigation({ 
@@ -24,7 +26,9 @@ export function Navigation({
   appSheets, 
   selectedSheets,
   onSheetSelect,
-  focusedSheet
+  focusedSheet,
+  showAddSheet,
+  setShowAddSheet
 }: NavigationProps) {
   const handleSheetClick = (sheetName: string) => {
     // 현재 포커스된 화면에 해당 시트를 설정 (교체)
@@ -74,7 +78,10 @@ export function Navigation({
         {/* Header */}
         <div className="px-[16px] py-[12px] flex items-center justify-between">
           <h3 className="font-medium" style={{ fontSize: '16px' }}>앱시트</h3>
-          <button className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors">
+          <button 
+            onClick={() => setShowAddSheet(true)}
+            className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+          >
             <Plus className="w-[16px] h-[16px]" />
           </button>
         </div>

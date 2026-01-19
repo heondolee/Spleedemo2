@@ -233,6 +233,14 @@ export default function App() {
     }));
   };
 
+  const handleDeleteTemplate = (categoryId: string, templateId: string) => {
+    // 템플릿 삭제
+    setSavedTemplates(prev => ({
+      ...prev,
+      [categoryId]: prev[categoryId].filter(t => t.id !== templateId),
+    }));
+  };
+
   const handleApplyTemplate = (categoryId: string, templateName: string) => {
     // 해당 카테고리의 기존 앱시트를 찾아서 템플릿 변경
     const categories = {
@@ -367,6 +375,7 @@ export default function App() {
               existingSheets={appSheets}
               savedTemplates={savedTemplates}
               onSaveTemplate={handleSaveTemplate}
+              onDeleteTemplate={handleDeleteTemplate}
               onApplyTemplate={handleApplyTemplate}
             />
           </div>

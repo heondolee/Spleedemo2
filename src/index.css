@@ -873,6 +873,16 @@
     background-color: var(--color-cyan-500);
   }
 
+  .bg-destructive\/90 {
+    background-color: var(--destructive);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-destructive\/90 {
+      background-color: color-mix(in oklab, var(--destructive) 90%, transparent);
+    }
+  }
+
   .bg-emerald-500 {
     background-color: var(--color-emerald-500);
   }
@@ -1114,6 +1124,10 @@
     color: var(--destructive);
   }
 
+  .text-destructive-foreground {
+    color: var(--destructive-foreground);
+  }
+
   .text-muted-foreground {
     color: var(--muted-foreground);
   }
@@ -1240,6 +1254,12 @@
   @media (hover: hover) {
     .hover\:bg-accent:hover {
       background-color: var(--accent);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-destructive:hover {
+      background-color: var(--destructive);
     }
   }
 

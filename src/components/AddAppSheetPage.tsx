@@ -27,6 +27,7 @@ interface AddAppSheetPageProps {
     }>;
   };
   onSaveTemplate: (categoryId: string, templateName: string, baseTemplate: any) => void;
+  onDeleteTemplate: (categoryId: string, templateId: string) => void;
   onApplyTemplate: (categoryId: string, templateName: string) => void;
 }
 
@@ -37,6 +38,7 @@ export function AddAppSheetPage({
   existingSheets,
   savedTemplates,
   onSaveTemplate,
+  onDeleteTemplate,
   onApplyTemplate
 }: AddAppSheetPageProps) {
   const categories = [
@@ -316,37 +318,66 @@ export function AddAppSheetPage({
                   })()}
                   
                   {/* Saved Templates */}
-                  {savedTemplates[selectedCategory]?.map((template) => {
-                    const isSelected = selectedTemplate.id === template.id;
-                    
-                    return (
-                      <div
-                        key={template.id}
-                        onClick={() => setSelectedTemplate(template as Template)}
-                        className={`flex-shrink-0 rounded-[12px] border-2 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-primary'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                        style={{ width: '120px' }}
-                      >
-                        {/* Thumbnail - 2:3 ratio (120px:180px) */}
-                        <div 
-                          className={`w-full rounded-t-[10px] ${template.color}`}
-                          style={{ height: '180px' }}
-                        ></div>
-                        {/* Info */}
-                        <div className="p-[10px]">
-                          <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
-                            {template.name}
-                          </h5>
-                          <p className="text-muted-foreground line-clamp-2" style={{ fontSize: '10px' }}>
-                            {template.description}
-                          </p>
+                  {savedTemplates[selectedCategory]
+                    ?.filter((template) => {
+                      // 현재 적용된 템플릿은 제외 (중복 방지)
+                      const currentTemplate = getCurrentTemplateForCategory(selectedCategory);
+                      return currentTemplate?.name !== template.name;
+                    })
+                    .map((template) => {
+                      const isSelected = selectedTemplate.id === template.id;
+                      
+                      return (
+                        <div
+                          key={template.id}
+                          className="flex-shrink-0 relative"
+                          style={{ width: '120px' }}
+                        >
+                          <div
+                            onClick={() => setSelectedTemplate(template as Template)}
+                            className={`rounded-[12px] border-2 transition-all cursor-pointer ${
+                              isSelected
+                                ? 'border-primary'
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                          >
+                            {/* Thumbnail - 2:3 ratio (120px:180px) */}
+                            <div 
+                              className={`w-full rounded-t-[10px] ${template.color}`}
+                              style={{ height: '180px' }}
+                            ></div>
+                            {/* Info */}
+                            <div className="p-[10px]">
+                              <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
+                                {template.name}
+                              </h5>
+                              <p className="text-muted-foreground line-clamp-2" style={{ fontSize: '10px' }}>
+                                {template.description}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Delete Button - Show only when selected */}
+                          {isSelected && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteTemplate(selectedCategory, template.id);
+                                // 삭제 후 현재 템플릿으로 선택 변경
+                                const currentTemplate = getCurrentTemplateForCategory(selectedCategory);
+                                if (currentTemplate) {
+                                  setSelectedTemplate(currentTemplate);
+                                }
+                              }}
+                              className="absolute top-[8px] right-[8px] p-[6px] rounded-[6px] bg-destructive/90 backdrop-blur-sm text-destructive-foreground hover:bg-destructive transition-colors z-10"
+                              title="템플릿 삭제"
+                            >
+                              <X className="w-[14px] h-[14px]" />
+                            </button>
+                          )}
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </ScrollableContainer>
               </div>
             )}

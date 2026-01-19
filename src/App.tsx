@@ -159,6 +159,7 @@ export default function App() {
               onClose={handleCloseAddSheet}
               onSelectTemplate={handleSelectTemplate}
               isOpen={showAddSheet}
+              existingSheets={appSheets}
             />
           </div>
         </div>

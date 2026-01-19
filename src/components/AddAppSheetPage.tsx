@@ -27,6 +27,7 @@ interface AddAppSheetPageProps {
     }>;
   };
   onSaveTemplate: (categoryId: string, templateName: string, baseTemplate: any) => void;
+  onApplyTemplate: (categoryId: string, templateName: string) => void;
 }
 
 export function AddAppSheetPage({ 
@@ -35,7 +36,8 @@ export function AddAppSheetPage({
   isOpen, 
   existingSheets,
   savedTemplates,
-  onSaveTemplate 
+  onSaveTemplate,
+  onApplyTemplate
 }: AddAppSheetPageProps) {
   const categories = [
     {
@@ -152,9 +154,8 @@ export function AddAppSheetPage({
   };
 
   const handleTemplateClick = (template: Template) => {
-    if (!isTemplateDisabled(template)) {
-      setSelectedTemplate(template);
-    }
+    // 미리보기는 항상 가능하도록 변경
+    setSelectedTemplate(template);
   };
 
   const handleAdd = () => {
@@ -227,7 +228,7 @@ export function AddAppSheetPage({
               savedTemplates[selectedCategory]?.some(t => t.id === selectedTemplate.id) && (
                 <button
                   className="px-[12px] py-[6px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                  onClick={handleAdd}
+                  onClick={() => onApplyTemplate(selectedCategory, selectedTemplate.name)}
                 >
                   <span className="font-medium" style={{ fontSize: '15px' }}>적용</span>
                 </button>

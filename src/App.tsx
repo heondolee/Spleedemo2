@@ -77,10 +77,107 @@ export default function App() {
     // 앱시트 목록에 추가 (중복 체크)
     const templateExists = appSheets.some(sheet => sheet.name === templateName);
     if (!templateExists) {
-      setAppSheets(prev => [
-        ...prev,
-        { id: Date.now().toString(), name: templateName, isNew: false }
-      ]);
+      const newSheet = { id: Date.now().toString(), name: templateName, isNew: false };
+      setAppSheets(prev => [...prev, newSheet]);
+      
+      // 선택한 템플릿을 자동으로 "내 템플릿"에 저장
+      const categories = {
+        daily: ['기본 일일 플래너', '시간표형 플래너', '목표 중심 플래너', '루틴 트래커', '집중 모드', 
+                '스터디 루틴', '수능 D-100', '완벽한 하루', '미라클 모닝', '밸런스 라이프'],
+        exam: ['기본 시험 관리', '과목별 준비도', '오답노트 연계', '모의고사 분석', 'D-Day 카운터',
+               '중간고사 대비', '수능 전략', '내신 관리', '약점 공략', '기출 분석'],
+        calendar: ['기본 월간 캘린더', '학사 일정', 'D-Day 캘린더', '주간 뷰', '연간 플래너',
+                   '학기 플래너', '방학 계획표', '100일 챌린지', '시험 일정표', '목표 달성기']
+      };
+      
+      // 카테고리 찾기
+      let categoryId = '';
+      for (const [catId, templates] of Object.entries(categories)) {
+        if (templates.includes(templateName)) {
+          categoryId = catId;
+          break;
+        }
+      }
+      
+      if (categoryId) {
+        // 템플릿 정보 찾기 (더미 데이터)
+        const templateColors: { [key: string]: string } = {
+          // daily
+          '기본 일일 플래너': 'bg-blue-500',
+          '시간표형 플래너': 'bg-indigo-500',
+          '목표 중심 플래너': 'bg-purple-500',
+          '루틴 트래커': 'bg-violet-500',
+          '집중 모드': 'bg-blue-600',
+          '스터디 루틴': 'bg-cyan-500',
+          '수능 D-100': 'bg-teal-500',
+          '완벽한 하루': 'bg-sky-500',
+          '미라클 모닝': 'bg-blue-400',
+          '밸런스 라이프': 'bg-indigo-400',
+          // exam
+          '기본 시험 관리': 'bg-red-500',
+          '과목별 준비도': 'bg-orange-500',
+          '오답노트 연계': 'bg-amber-500',
+          '모의고사 분석': 'bg-yellow-500',
+          'D-Day 카운터': 'bg-red-600',
+          '중간고사 대비': 'bg-rose-500',
+          '수능 전략': 'bg-pink-500',
+          '내신 관리': 'bg-fuchsia-500',
+          '약점 공략': 'bg-rose-600',
+          '기출 분석': 'bg-red-400',
+          // calendar
+          '기본 월간 캘린더': 'bg-green-500',
+          '학사 일정': 'bg-emerald-500',
+          'D-Day 캘린더': 'bg-lime-500',
+          '주간 뷰': 'bg-green-600',
+          '연간 플래너': 'bg-teal-600',
+          '학기 플래너': 'bg-teal-500',
+          '방학 계획표': 'bg-cyan-500',
+          '100일 챌린지': 'bg-sky-500',
+          '시험 일정표': 'bg-emerald-600',
+          '목표 달성기': 'bg-green-400',
+        };
+        
+        const templateDescriptions: { [key: string]: string } = {
+          // daily
+          '기본 일일 플래너': '간단한 하루 일정 관리',
+          '시간표형 플래너': '시간대별 상세 계획',
+          '목표 중심 플래너': '일일 목표 달성 추적',
+          '루틴 트래커': '습관 형성 및 루틴 관리',
+          '집중 모드': '포모도로 기반 플래너',
+          '스터디 루틴': '완벽한 학습 루틴 관리',
+          '수능 D-100': '수능 카운트다운과 일일 계획',
+          '완벽한 하루': '생산성 극대화 플래너',
+          '미라클 모닝': '새벽 루틴 최적화',
+          '밸런스 라이프': '공부와 휴식의 균형',
+          // exam
+          '기본 시험 관리': '시험 일정과 준비 현황',
+          '과목별 준비도': '과목별 학습 진도 추적',
+          '오답노트 연계': '시험과 오답 통합 관리',
+          '모의고사 분석': '성적 추이 및 분석',
+          'D-Day 카운터': '시험일 카운트다운',
+          '중간고사 대비': '중간고사 완벽 준비',
+          '수능 전략': '수능 시험 전략 관리',
+          '내신 관리': '내신 성적 관리',
+          '약점 공략': '취약 과목 집중 관리',
+          '기출 분석': '기출문제 패턴 분석',
+          // calendar
+          '기본 월간 캘린더': '월 단위 일정 관리',
+          '학사 일정': '학교 일정 중심 캘린더',
+          'D-Day 캘린더': '중요 날짜 카운트다운',
+          '주간 뷰': '주 단위 상세 일정',
+          '연간 플래너': '1년 전체 계획 관리',
+          '학기 플래너': '학기별 일정 관리',
+          '방학 계획표': '방학 계획 수립',
+          '100일 챌린지': '100일 목표 달성',
+          '시험 일정표': '시험 중심 캘린더',
+          '목표 달성기': '월별 목표 추적',
+        };
+        
+        handleSaveTemplate(categoryId, templateName, {
+          description: templateDescriptions[templateName] || '',
+          color: templateColors[templateName] || 'bg-gray-500',
+        });
+      }
     }
     
     setShowAddSheet(false);
@@ -134,6 +231,40 @@ export default function App() {
       ...prev,
       [categoryId]: [...prev[categoryId], newTemplate],
     }));
+  };
+
+  const handleApplyTemplate = (categoryId: string, templateName: string) => {
+    // 해당 카테고리의 기존 앱시트를 찾아서 템플릿 변경
+    const categories = {
+      daily: ['기본 일일 플래너', '시간표형 플래너', '목표 중심 플래너', '루틴 트래커', '집중 모드', 
+              '스터디 루틴', '수능 D-100', '완벽한 하루', '미라클 모닝', '밸런스 라이프'],
+      exam: ['기본 시험 관리', '과목별 준비도', '오답노트 연계', '모의고사 분석', 'D-Day 카운터',
+             '중간고사 대비', '수능 전략', '내신 관리', '약점 공략', '기출 분석'],
+      calendar: ['기본 월간 캘린더', '학사 일정', 'D-Day 캘린더', '주간 뷰', '연간 플래너',
+                 '학기 플래너', '방학 계획표', '100일 챌린지', '시험 일정표', '목표 달성기']
+    };
+
+    // 해당 카테고리에 속한 기존 앱시트 찾기
+    const existingSheet = appSheets.find(sheet => 
+      categories[categoryId as keyof typeof categories]?.includes(sheet.name)
+    );
+
+    if (existingSheet) {
+      const oldName = existingSheet.name;
+      // 앱시트 이름 변경
+      setAppSheets(prev => 
+        prev.map(sheet => 
+          sheet.id === existingSheet.id ? { ...sheet, name: templateName } : sheet
+        )
+      );
+      // 선택된 화면도 업데이트
+      setSelectedSheets(prev => ({
+        left: prev.left === oldName ? templateName : prev.left,
+        right: prev.right === oldName ? templateName : prev.right
+      }));
+    }
+
+    setShowAddSheet(false);
   };
 
   return (
@@ -236,6 +367,7 @@ export default function App() {
               existingSheets={appSheets}
               savedTemplates={savedTemplates}
               onSaveTemplate={handleSaveTemplate}
+              onApplyTemplate={handleApplyTemplate}
             />
           </div>
         </div>

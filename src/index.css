@@ -89,6 +89,7 @@
     --color-rose-500: oklch(.645 .246 16.439);
     --color-rose-600: oklch(.586 .253 17.585);
     --color-slate-200: oklch(.929 .013 255.508);
+    --color-gray-500: oklch(.551 .027 264.364);
     --color-black: #000;
     --color-white: #fff;
     --spacing: .25rem;
@@ -882,6 +883,10 @@
 
   .bg-fuchsia-500 {
     background-color: var(--color-fuchsia-500);
+  }
+
+  .bg-gray-500 {
+    background-color: var(--color-gray-500);
   }
 
   .bg-green-400 {

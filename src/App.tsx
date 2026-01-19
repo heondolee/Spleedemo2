@@ -103,12 +103,6 @@ export default function App() {
                         </div>
                       </div>
                     )}
-                    {/* Sheet Content */}
-                    <div className="p-[24px]">
-                      <p style={{ fontSize: '14px' }} className="text-muted-foreground">
-                        {selectedSheets.left} 콘텐츠
-                      </p>
-                    </div>
                   </>
                 )}
               </div>
@@ -138,12 +132,6 @@ export default function App() {
                         </div>
                       </div>
                     )}
-                    {/* Sheet Content */}
-                    <div className="p-[24px]">
-                      <p style={{ fontSize: '14px' }} className="text-muted-foreground">
-                        {selectedSheets.right} 콘텐츠
-                      </p>
-                    </div>
                   </>
                 )}
               </div>

@@ -84,35 +84,35 @@ export function Navigation({
           {appSheets.map((sheet) => {
             const isLeftSelected = selectedSheets.left === sheet.name;
             const isRightSelected = selectedSheets.right === sheet.name;
-            const isSelected = isLeftSelected || isRightSelected;
-
+            const isAnySelected = isLeftSelected || isRightSelected;
+            const isFocused = (isLeftSelected && focusedSheet === 'left') || (isRightSelected && focusedSheet === 'right');
+            
             return (
               <div
                 key={sheet.id}
                 onClick={() => handleSheetClick(sheet.name)}
-                className={`
-                  px-[12px] py-[12px] mb-[4px] rounded-[8px] cursor-pointer
-                  transition-colors relative
-                  ${isSelected ? 'bg-accent border border-primary' : 'hover:bg-accent/50'}
-                `}
-                style={{ minHeight: '44px' }}
+                className={`flex items-center justify-between px-[16px] py-[12px] rounded-[12px] cursor-pointer transition-colors ${
+                  isFocused ? 'bg-primary/10' : 'hover:bg-accent'
+                }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-[8px]">
-                    <span style={{ fontSize: '14px' }}>{sheet.name}</span>
-                    {sheet.isNew && (
-                      <span 
-                        className="bg-primary text-primary-foreground px-[6px] py-[2px] rounded-[4px]"
-                        style={{ fontSize: '10px' }}
-                      >
-                        NEW
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Position Indicators - Split Screen Icon */}
+                {/* Left: Sheet Name + Badge */}
+                <div className="flex items-center gap-[8px]">
+                  <span className="font-medium" style={{ fontSize: '15px' }}>
+                    {sheet.name}
+                  </span>
+                  {sheet.isNew && (
+                    <span 
+                      className="px-[6px] py-[2px] bg-primary text-primary-foreground rounded-[4px]"
+                      style={{ fontSize: '11px' }}
+                    >
+                      NEW
+                    </span>
+                  )}
+                </div>
+
+                {/* Right: Position Indicators - Split Screen Icon (only if sheet is selected) */}
+                {isAnySelected && (
                   <div className="flex items-center">
-                    {/* 양쪽 화면을 보여주는 아이콘 (항상 표시) */}
                     <svg 
                       width="24" 
                       height="24" 
@@ -129,8 +129,9 @@ export function Navigation({
                         rx="2"
                         stroke="currentColor" 
                         strokeWidth="2"
-                        fill={(isLeftSelected && focusedSheet === 'left') ? 'currentColor' : 'none'}
-                        fillOpacity={(isLeftSelected && focusedSheet === 'left') ? '0.3' : '0'}
+                        strokeDasharray={isLeftSelected ? '0' : '3 3'}
+                        fill={isLeftSelected ? 'currentColor' : 'none'}
+                        fillOpacity={isLeftSelected ? '0.3' : '0'}
                       />
                       {/* 오른쪽 화면 */}
                       <rect 
@@ -141,12 +142,13 @@ export function Navigation({
                         rx="2"
                         stroke="currentColor" 
                         strokeWidth="2"
-                        fill={(isRightSelected && focusedSheet === 'right') ? 'currentColor' : 'none'}
-                        fillOpacity={(isRightSelected && focusedSheet === 'right') ? '0.3' : '0'}
+                        strokeDasharray={isRightSelected ? '0' : '3 3'}
+                        fill={isRightSelected ? 'currentColor' : 'none'}
+                        fillOpacity={isRightSelected ? '0.3' : '0'}
                       />
                     </svg>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

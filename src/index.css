@@ -421,10 +421,6 @@
     z-index: 50;
   }
 
-  .mb-\[4px\] {
-    margin-bottom: 4px;
-  }
-
   .flex {
     display: flex;
   }
@@ -530,6 +526,10 @@
     border-radius: 8px;
   }
 
+  .rounded-\[12px\] {
+    border-radius: 12px;
+  }
+
   .rounded-\[24px\] {
     border-radius: 24px;
   }
@@ -554,14 +554,6 @@
 
   .border-border {
     border-color: var(--border);
-  }
-
-  .border-primary {
-    border-color: var(--primary);
-  }
-
-  .bg-accent {
-    background-color: var(--accent);
   }
 
   .bg-background {
@@ -594,6 +586,16 @@
     background-color: var(--primary);
   }
 
+  .bg-primary\/10 {
+    background-color: var(--primary);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .bg-primary\/10 {
+      background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+    }
+  }
+
   .bg-slate-200 {
     background-color: var(--color-slate-200);
   }
@@ -616,20 +618,12 @@
     padding: 16px;
   }
 
-  .p-\[24px\] {
-    padding: 24px;
-  }
-
   .px-\[6px\] {
     padding-inline: 6px;
   }
 
   .px-\[8px\] {
     padding-inline: 8px;
-  }
-
-  .px-\[12px\] {
-    padding-inline: 12px;
   }
 
   .px-\[16px\] {
@@ -651,10 +645,6 @@
   .font-medium {
     --tw-font-weight: var(--font-weight-medium);
     font-weight: var(--font-weight-medium);
-  }
-
-  .text-muted-foreground {
-    color: var(--muted-foreground);
   }
 
   .text-primary {
@@ -719,18 +709,6 @@
   @media (hover: hover) {
     .hover\:bg-accent:hover {
       background-color: var(--accent);
-    }
-  }
-
-  @media (hover: hover) {
-    .hover\:bg-accent\/50:hover {
-      background-color: var(--accent);
-    }
-
-    @supports (color: color-mix(in lab, red, red)) {
-      .hover\:bg-accent\/50:hover {
-        background-color: color-mix(in oklab, var(--accent) 50%, transparent);
-      }
     }
   }
 }

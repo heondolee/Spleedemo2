@@ -18,6 +18,21 @@ export default function App() {
   // 앱시트 목록 (빈 배열로 시작)
   const [appSheets, setAppSheets] = useState<Array<{ id: string; name: string; isNew: boolean }>>([]);
 
+  // 저장된 템플릿 (카테고리별)
+  const [savedTemplates, setSavedTemplates] = useState<{
+    [categoryId: string]: Array<{
+      id: string;
+      name: string;
+      description: string;
+      color: string;
+      category: string;
+    }>;
+  }>({
+    daily: [],
+    exam: [],
+    calendar: [],
+  });
+
   const handleSheetSelect = (sheetName: string, position: 'left' | 'right') => {
     setSelectedSheets(prev => ({
       ...prev,
@@ -103,6 +118,22 @@ export default function App() {
 
   const handleReorderSheets = (newOrder: Array<{ id: string; name: string; isNew: boolean }>) => {
     setAppSheets(newOrder);
+  };
+
+  const handleSaveTemplate = (categoryId: string, templateName: string, baseTemplate: any) => {
+    // 템플릿 저장
+    const newTemplate = {
+      id: Date.now().toString(),
+      name: templateName,
+      description: baseTemplate.description,
+      color: baseTemplate.color,
+      category: categoryId,
+    };
+    
+    setSavedTemplates(prev => ({
+      ...prev,
+      [categoryId]: [...prev[categoryId], newTemplate],
+    }));
   };
 
   return (
@@ -203,6 +234,8 @@ export default function App() {
               onSelectTemplate={handleSelectTemplate}
               isOpen={showAddSheet}
               existingSheets={appSheets}
+              savedTemplates={savedTemplates}
+              onSaveTemplate={handleSaveTemplate}
             />
           </div>
         </div>

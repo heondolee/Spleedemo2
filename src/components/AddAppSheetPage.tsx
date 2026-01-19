@@ -1,4 +1,4 @@
-import { X, BookOpen, Calendar, Target, Clock, FileText, Grid } from 'lucide-react';
+import { X, BookOpen, Calendar, Target, Clock, FileText, Grid, ArrowLeft, Save } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { ScrollableContainer } from './ScrollableContainer';
 
@@ -17,9 +17,26 @@ interface AddAppSheetPageProps {
   onSelectTemplate: (templateName: string) => void;
   isOpen: boolean;
   existingSheets: Array<{ id: string; name: string; isNew: boolean }>;
+  savedTemplates: {
+    [categoryId: string]: Array<{
+      id: string;
+      name: string;
+      description: string;
+      color: string;
+      category: string;
+    }>;
+  };
+  onSaveTemplate: (categoryId: string, templateName: string, baseTemplate: any) => void;
 }
 
-export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingSheets }: AddAppSheetPageProps) {
+export function AddAppSheetPage({ 
+  onClose, 
+  onSelectTemplate, 
+  isOpen, 
+  existingSheets,
+  savedTemplates,
+  onSaveTemplate 
+}: AddAppSheetPageProps) {
   const categories = [
     {
       id: 'daily',
@@ -104,6 +121,24 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
     return null;
   };
 
+  // 현재 적용된 템플릿 찾기 (해당 카테고리의 existingSheet)
+  const getCurrentTemplateForCategory = (categoryId: string): Template | null => {
+    const sheet = existingSheets.find(
+      (s) => getCategoryFromSheetName(s.name) === categoryId
+    );
+    if (!sheet) return null;
+
+    // 모든 템플릿 중에서 찾기
+    const category = categories.find((cat) => cat.id === categoryId);
+    if (!category) return null;
+
+    const allTemplates = [
+      ...category.basicTemplates,
+      ...category.popularTemplates,
+    ];
+    return allTemplates.find((t) => t.name === sheet.name) || null;
+  };
+
   const existingCategories = new Set(
     existingSheets.map(sheet => getCategoryFromSheetName(sheet.name)).filter(Boolean)
   );
@@ -129,11 +164,6 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    // 비활성화된 카테고리는 선택 불가
-    if (isCategoryDisabled(categoryId)) {
-      return;
-    }
-    
     setSelectedCategory(categoryId);
     // 카테고리 변경 시 해당 카테고리의 첫 번째 템플릿 선택
     const category = categories.find(cat => cat.id === categoryId);
@@ -169,20 +199,35 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
         <div className="flex items-center justify-between px-[24px] border-b border-border" style={{ height: '56px' }}>
           <button
             onClick={onClose}
-            className="px-[12px] py-[6px] rounded-[8px] hover:bg-accent transition-colors"
+            className="p-[8px] rounded-[8px] hover:bg-accent transition-colors"
           >
-            <span className="font-medium" style={{ fontSize: '15px' }}>취소</span>
+            <ArrowLeft className="w-[20px] h-[20px]" />
           </button>
           
           <h2 className="font-semibold" style={{ fontSize: '18px' }}>새 앱시트 추가</h2>
           
-          <button
-            className="px-[12px] py-[6px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleAdd}
-            disabled={isTemplateDisabled(selectedTemplate)}
-          >
-            <span className="font-medium" style={{ fontSize: '15px' }}>추가</span>
-          </button>
+          {/* Show button based on state */}
+          <div style={{ width: '80px' }} className="flex justify-end">
+            {!isCategoryDisabled(selectedCategory) ? (
+              <button
+                className="px-[12px] py-[6px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                onClick={handleAdd}
+              >
+                <span className="font-medium" style={{ fontSize: '15px' }}>추가</span>
+              </button>
+            ) : (
+              // For categories with existing sheets, show "적용" only when selecting a different template from "내 템플릿"
+              getCurrentTemplateForCategory(selectedCategory)?.name !== selectedTemplate.name &&
+              savedTemplates[selectedCategory]?.some(t => t.id === selectedTemplate.id) && (
+                <button
+                  className="px-[12px] py-[6px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  onClick={handleAdd}
+                >
+                  <span className="font-medium" style={{ fontSize: '15px' }}>적용</span>
+                </button>
+              )
+            )}
+          </div>
         </div>
 
         {/* Category Tabs */}
@@ -191,20 +236,16 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
             {categories.map((category) => {
               const Icon = category.icon;
               const isActive = selectedCategory === category.id;
-              const isDisabled = isCategoryDisabled(category.id);
               
               return (
                 <button
                   key={category.id}
-                  onClick={() => !isDisabled && handleCategoryChange(category.id)}
+                  onClick={() => handleCategoryChange(category.id)}
                   className={`flex items-center gap-[8px] px-[16px] py-[8px] rounded-[8px] transition-all ${
-                    isDisabled 
-                      ? 'opacity-40 cursor-not-allowed'
-                      : isActive
+                    isActive
                       ? 'bg-primary text-primary-foreground'
                       : 'hover:bg-accent'
                   }`}
-                  disabled={isDisabled}
                 >
                   <Icon className="w-[16px] h-[16px]" />
                   <span className="font-medium" style={{ fontSize: '14px' }}>
@@ -219,7 +260,90 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
         {/* Content - Split View */}
         <div className="flex" style={{ height: 'calc(794px - 56px - 52px)' }}>
           {/* Left Side - Horizontal Scroll Template List */}
-          <div className="border-r border-border" style={{ width: '577px' }}>
+          <div className="border-r border-border overflow-y-auto" style={{ width: '577px' }}>
+            {/* My Templates Section - Shown at top (if category exists) */}
+            {isCategoryDisabled(selectedCategory) && (
+              <div className="p-[20px] border-b border-border">
+                <h4 className="font-medium mb-[12px] text-muted-foreground" style={{ fontSize: '13px' }}>
+                  내 템플릿
+                </h4>
+                <ScrollableContainer className="flex gap-[12px] overflow-x-auto pb-[8px] scrollbar-hide">
+                  {/* Current Applied Template */}
+                  {(() => {
+                    const currentTemplate = getCurrentTemplateForCategory(selectedCategory);
+                    if (currentTemplate) {
+                      const isSelected = selectedTemplate.id === currentTemplate.id;
+                      return (
+                        <div
+                          key={`current-${currentTemplate.id}`}
+                          onClick={() => setSelectedTemplate(currentTemplate)}
+                          className={`flex-shrink-0 rounded-[12px] border-2 transition-all cursor-pointer relative ${
+                            isSelected
+                              ? 'border-primary'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          style={{ width: '120px' }}
+                        >
+                          {/* "현재" Badge */}
+                          <div className="absolute top-[8px] right-[8px] z-10 px-[8px] py-[2px] rounded-[4px] bg-primary text-primary-foreground">
+                            <span className="font-medium" style={{ fontSize: '10px' }}>현재</span>
+                          </div>
+                          {/* Thumbnail - 2:3 ratio (120px:180px) */}
+                          <div 
+                            className={`w-full rounded-t-[10px] ${currentTemplate.color}`}
+                            style={{ height: '180px' }}
+                          ></div>
+                          {/* Info */}
+                          <div className="p-[10px]">
+                            <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
+                              {currentTemplate.name}
+                            </h5>
+                            <p className="text-muted-foreground line-clamp-2" style={{ fontSize: '10px' }}>
+                              {currentTemplate.description}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
+                  {/* Saved Templates */}
+                  {savedTemplates[selectedCategory]?.map((template) => {
+                    const isSelected = selectedTemplate.id === template.id;
+                    
+                    return (
+                      <div
+                        key={template.id}
+                        onClick={() => setSelectedTemplate(template as Template)}
+                        className={`flex-shrink-0 rounded-[12px] border-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        style={{ width: '120px' }}
+                      >
+                        {/* Thumbnail - 2:3 ratio (120px:180px) */}
+                        <div 
+                          className={`w-full rounded-t-[10px] ${template.color}`}
+                          style={{ height: '180px' }}
+                        ></div>
+                        {/* Info */}
+                        <div className="p-[10px]">
+                          <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
+                            {template.name}
+                          </h5>
+                          <p className="text-muted-foreground line-clamp-2" style={{ fontSize: '10px' }}>
+                            {template.description}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </ScrollableContainer>
+              </div>
+            )}
+            
             {/* Basic Templates Section */}
             <div className="p-[20px] border-b border-border">
               <h4 className="font-medium mb-[12px] text-muted-foreground" style={{ fontSize: '13px' }}>
@@ -228,35 +352,50 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
               <ScrollableContainer className="flex gap-[12px] overflow-x-auto pb-[8px] scrollbar-hide">
                 {currentCategory?.basicTemplates.map((template) => {
                   const isSelected = selectedTemplate.id === template.id;
-                  const disabled = isTemplateDisabled(template);
                   
                   return (
                     <div
                       key={template.id}
-                      onClick={() => handleTemplateClick(template)}
-                      className={`flex-shrink-0 rounded-[12px] border-2 transition-all ${
-                        disabled 
-                          ? 'border-border cursor-not-allowed opacity-50' 
-                          : isSelected
-                          ? 'border-primary'
-                          : 'border-border hover:border-primary/50 cursor-pointer'
-                      }`}
+                      className="flex-shrink-0 relative"
                       style={{ width: '120px' }}
                     >
-                      {/* Thumbnail - 2:3 ratio (120px:180px) */}
-                      <div 
-                        className={`w-full rounded-t-[10px] ${template.color}`}
-                        style={{ height: '180px' }}
-                      ></div>
-                      {/* Info */}
-                      <div className="p-[10px]">
-                        <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
-                          {template.name}
-                        </h5>
-                        <p className="text-muted-foreground line-clamp-2" style={{ fontSize: '10px' }}>
-                          {template.description}
-                        </p>
+                      <div
+                        onClick={() => handleTemplateClick(template)}
+                        className={`rounded-[12px] border-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {/* Thumbnail - 2:3 ratio (120px:180px) */}
+                        <div 
+                          className={`w-full rounded-t-[10px] ${template.color}`}
+                          style={{ height: '180px' }}
+                        ></div>
+                        {/* Info */}
+                        <div className="p-[10px]">
+                          <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
+                            {template.name}
+                          </h5>
+                          <p className="text-muted-foreground line-clamp-2" style={{ fontSize: '10px' }}>
+                            {template.description}
+                          </p>
+                        </div>
                       </div>
+                      
+                      {/* Save Button - Show only for categories with existing sheets */}
+                      {isCategoryDisabled(selectedCategory) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSaveTemplate(selectedCategory, template.name, template);
+                          }}
+                          className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
+                          title="템플릿 저장"
+                        >
+                          <Save className="w-[14px] h-[14px]" />
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -264,43 +403,58 @@ export function AddAppSheetPage({ onClose, onSelectTemplate, isOpen, existingShe
             </div>
 
             {/* Popular Templates Section */}
-            <div className="p-[20px]">
+            <div className="p-[20px] border-b border-border">
               <h4 className="font-medium mb-[12px] text-muted-foreground" style={{ fontSize: '13px' }}>
                 친구 인기 템플릿
               </h4>
               <ScrollableContainer className="flex gap-[12px] overflow-x-auto pb-[8px] scrollbar-hide">
                 {currentCategory?.popularTemplates.map((template) => {
                   const isSelected = selectedTemplate.id === template.id;
-                  const disabled = isTemplateDisabled(template);
                   
                   return (
                     <div
                       key={template.id}
-                      onClick={() => handleTemplateClick(template)}
-                      className={`flex-shrink-0 rounded-[12px] border-2 transition-all ${
-                        disabled 
-                          ? 'border-border cursor-not-allowed opacity-50' 
-                          : isSelected
-                          ? 'border-primary'
-                          : 'border-border hover:border-primary/50 cursor-pointer'
-                      }`}
+                      className="flex-shrink-0 relative"
                       style={{ width: '120px' }}
                     >
-                      {/* Thumbnail - 2:3 ratio (120px:180px) */}
-                      <div 
-                        className={`w-full rounded-t-[10px] ${template.color}`}
-                        style={{ height: '180px' }}
-                      ></div>
-                      {/* Info */}
-                      <div className="p-[10px]">
-                        <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
-                          {template.name}
-                        </h5>
-                        <div className="flex items-center gap-[6px] text-muted-foreground">
-                          <span className="truncate" style={{ fontSize: '10px' }}>{template.author}</span>
-                          <span className="flex-shrink-0" style={{ fontSize: '10px' }}>♥ {template.likes}</span>
+                      <div
+                        onClick={() => handleTemplateClick(template)}
+                        className={`rounded-[12px] border-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-primary'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {/* Thumbnail - 2:3 ratio (120px:180px) */}
+                        <div 
+                          className={`w-full rounded-t-[10px] ${template.color}`}
+                          style={{ height: '180px' }}
+                        ></div>
+                        {/* Info */}
+                        <div className="p-[10px]">
+                          <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
+                            {template.name}
+                          </h5>
+                          <div className="flex items-center gap-[6px] text-muted-foreground">
+                            <span className="truncate" style={{ fontSize: '10px' }}>{template.author}</span>
+                            <span className="flex-shrink-0" style={{ fontSize: '10px' }}>♥ {template.likes}</span>
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Save Button - Show only for categories with existing sheets */}
+                      {isCategoryDisabled(selectedCategory) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSaveTemplate(selectedCategory, template.name, template);
+                          }}
+                          className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
+                          title="템플릿 저장"
+                        >
+                          <Save className="w-[14px] h-[14px]" />
+                        </button>
+                      )}
                     </div>
                   );
                 })}

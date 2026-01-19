@@ -91,18 +91,19 @@ export function Navigation({
               <div
                 key={sheet.id}
                 onClick={() => handleSheetClick(sheet.name)}
-                className={`flex items-center justify-between px-[16px] py-[12px] rounded-[12px] cursor-pointer transition-colors ${
+                className={`flex items-center justify-between px-[16px] rounded-[12px] cursor-pointer transition-colors ${
                   isFocused ? 'bg-primary/10' : 'hover:bg-accent'
                 }`}
+                style={{ height: '48px', minHeight: '48px' }}
               >
                 {/* Left: Sheet Name + Badge */}
-                <div className="flex items-center gap-[8px]">
+                <div className="flex items-center gap-[8px] flex-1 min-w-0">
                   <span className="font-medium" style={{ fontSize: '15px' }}>
                     {sheet.name}
                   </span>
                   {sheet.isNew && (
                     <span 
-                      className="px-[6px] py-[2px] bg-primary text-primary-foreground rounded-[4px]"
+                      className="px-[6px] py-[2px] bg-primary text-primary-foreground rounded-[4px] flex-shrink-0"
                       style={{ fontSize: '11px' }}
                     >
                       NEW
@@ -111,7 +112,7 @@ export function Navigation({
                 </div>
 
                 {/* Right: Position Indicators - Fixed width to prevent layout shift */}
-                <div className="flex items-center justify-end" style={{ width: '24px' }}>
+                <div className="flex items-center justify-end flex-shrink-0" style={{ width: '24px', height: '24px' }}>
                   {isAnySelected && (
                     <svg 
                       width="24" 

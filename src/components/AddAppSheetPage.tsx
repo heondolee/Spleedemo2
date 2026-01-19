@@ -47,57 +47,27 @@ export function AddAppSheetPage({
       name: '하루 계획',
       icon: BookOpen,
       basicTemplates: [
-        { id: '1', name: '기본 일일 플래너', description: '간단한 하루 일정 관리', color: 'bg-blue-500', category: 'daily' },
-        { id: '2', name: '시간표형 플래너', description: '시간대별 상세 계획', color: 'bg-indigo-500', category: 'daily' },
-        { id: '3', name: '목표 중심 플래너', description: '일일 목표 달성 추적', color: 'bg-purple-500', category: 'daily' },
-        { id: '4', name: '루틴 트래커', description: '습관 형성 및 루틴 관리', color: 'bg-violet-500', category: 'daily' },
-        { id: '5', name: '집중 모드', description: '포모도로 기반 플래너', color: 'bg-blue-600', category: 'daily' },
+        { id: '1', name: '하루 계획', description: '하루 일정과 목표를 관리합니다', color: 'bg-blue-500', category: 'daily' },
       ],
-      popularTemplates: [
-        { id: '6', name: '스터디 루틴', author: '@학습왕', likes: 234, color: 'bg-cyan-500', category: 'daily', description: '완벽한 학습 루틴 관리' },
-        { id: '7', name: '수능 D-100', author: '@고3선배', likes: 189, color: 'bg-teal-500', category: 'daily', description: '수능 카운트다운과 일일 계획' },
-        { id: '8', name: '완벽한 하루', author: '@플래너덕후', likes: 156, color: 'bg-sky-500', category: 'daily', description: '생산성 극대화 플래너' },
-        { id: '9', name: '미라클 모닝', author: '@아침형인간', likes: 201, color: 'bg-blue-400', category: 'daily', description: '새벽 루틴 최적화' },
-        { id: '10', name: '밸런스 라이프', author: '@워라밸', likes: 178, color: 'bg-indigo-400', category: 'daily', description: '공부와 휴식의 균형' },
-      ],
+      popularTemplates: [],
     },
     {
       id: 'exam',
       name: '시험 관리',
       icon: Target,
       basicTemplates: [
-        { id: '11', name: '기본 시험 관리', description: '시험 일정과 준비 현황', color: 'bg-red-500', category: 'exam' },
-        { id: '12', name: '과목별 준비도', description: '과목별 학습 진도 추적', color: 'bg-orange-500', category: 'exam' },
-        { id: '13', name: '오답노트 연계', description: '시험과 오답 통합 관리', color: 'bg-amber-500', category: 'exam' },
-        { id: '14', name: '모의고사 분석', description: '성적 추이 및 분석', color: 'bg-yellow-500', category: 'exam' },
-        { id: '15', name: 'D-Day 카운터', description: '시험일 카운트다운', color: 'bg-red-600', category: 'exam' },
+        { id: '2', name: '시험 관리', description: '시험 일정과 준비 현황을 관리합니다', color: 'bg-red-500', category: 'exam' },
       ],
-      popularTemplates: [
-        { id: '16', name: '중간고사 대비', author: '@시험만점', likes: 312, color: 'bg-rose-500', category: 'exam', description: '중간고사 완벽 준비' },
-        { id: '17', name: '수능 전략', author: '@N수생', likes: 278, color: 'bg-pink-500', category: 'exam', description: '수능 시험 전략 관리' },
-        { id: '18', name: '내신 관리', author: '@1등급', likes: 201, color: 'bg-fuchsia-500', category: 'exam', description: '내신 성적 관리' },
-        { id: '19', name: '약점 공략', author: '@성적상승', likes: 189, color: 'bg-rose-600', category: 'exam', description: '취약 과목 집중 관리' },
-        { id: '20', name: '기출 분석', author: '@기출마스터', likes: 245, color: 'bg-red-400', category: 'exam', description: '기출문제 패턴 분석' },
-      ],
+      popularTemplates: [],
     },
     {
       id: 'calendar',
       name: '캘린더',
       icon: Calendar,
       basicTemplates: [
-        { id: '21', name: '기본 월간 캘린더', description: '월 단위 일정 관리', color: 'bg-green-500', category: 'calendar' },
-        { id: '22', name: '학사 일정', description: '학교 일정 중심 캘린더', color: 'bg-emerald-500', category: 'calendar' },
-        { id: '23', name: 'D-Day 캘린더', description: '중요 날짜 카운트다운', color: 'bg-lime-500', category: 'calendar' },
-        { id: '24', name: '주간 뷰', description: '주 단위 상세 일정', color: 'bg-green-600', category: 'calendar' },
-        { id: '25', name: '연간 플래너', description: '1년 전체 계획 관리', color: 'bg-teal-600', category: 'calendar' },
+        { id: '3', name: '캘린더', description: '일정을 캘린더로 관리합니다', color: 'bg-green-500', category: 'calendar' },
       ],
-      popularTemplates: [
-        { id: '26', name: '학기 플래너', author: '@모범생', likes: 267, color: 'bg-teal-500', category: 'calendar', description: '학기별 일정 관리' },
-        { id: '27', name: '방학 계획표', author: '@계획왕', likes: 198, color: 'bg-cyan-500', category: 'calendar', description: '방학 계획 수립' },
-        { id: '28', name: '100일 챌린지', author: '@꾸준러', likes: 175, color: 'bg-sky-500', category: 'calendar', description: '100일 목표 달성' },
-        { id: '29', name: '시험 일정표', author: '@계획형', likes: 223, color: 'bg-emerald-600', category: 'calendar', description: '시험 중심 캘린더' },
-        { id: '30', name: '목표 달성기', author: '@성취왕', likes: 156, color: 'bg-green-400', category: 'calendar', description: '월별 목표 추적' },
-      ],
+      popularTemplates: [],
     },
   ];
 
@@ -449,73 +419,75 @@ export function AddAppSheetPage({
               </ScrollableContainer>
             </div>
 
-            {/* Popular Templates Section */}
-            <div className="p-[20px] border-b border-border">
-              <h4 className="font-medium mb-[12px] text-muted-foreground" style={{ fontSize: '13px' }}>
-                친구 인기 템플릿
-              </h4>
-              <ScrollableContainer className="flex gap-[12px] overflow-x-auto pb-[8px] scrollbar-hide">
-                {currentCategory?.popularTemplates.map((template) => {
-                  const isSelected = selectedTemplate.id === template.id;
-                  
-                  return (
-                    <div
-                      key={template.id}
-                      className="flex-shrink-0 relative"
-                      style={{ width: '120px' }}
-                    >
+            {/* Popular Templates Section - Only show if there are templates */}
+            {currentCategory?.popularTemplates && currentCategory.popularTemplates.length > 0 && (
+              <div className="p-[20px] border-b border-border">
+                <h4 className="font-medium mb-[12px] text-muted-foreground" style={{ fontSize: '13px' }}>
+                  친구 인기 템플릿
+                </h4>
+                <ScrollableContainer className="flex gap-[12px] overflow-x-auto pb-[8px] scrollbar-hide">
+                  {currentCategory.popularTemplates.map((template) => {
+                    const isSelected = selectedTemplate.id === template.id;
+
+                    return (
                       <div
-                        onClick={() => handleTemplateClick(template)}
-                        className={`rounded-[12px] border-2 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-primary'
-                            : 'border-border hover:border-primary/50'
-                        }`}
+                        key={template.id}
+                        className="flex-shrink-0 relative"
+                        style={{ width: '120px' }}
                       >
-                        {/* Thumbnail - 2:3 ratio (120px:180px) */}
-                        <div 
-                          className={`w-full rounded-t-[10px] ${template.color}`}
-                          style={{ height: '180px' }}
-                        ></div>
-                        {/* Info */}
-                        <div className="p-[10px]">
-                          <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
-                            {template.name}
-                          </h5>
-                          <div className="flex items-center gap-[6px] text-muted-foreground">
-                            <span className="truncate" style={{ fontSize: '10px' }}>{template.author}</span>
-                            <span className="flex-shrink-0" style={{ fontSize: '10px' }}>♥ {template.likes}</span>
+                        <div
+                          onClick={() => handleTemplateClick(template)}
+                          className={`rounded-[12px] border-2 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-primary'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          {/* Thumbnail - 2:3 ratio (120px:180px) */}
+                          <div
+                            className={`w-full rounded-t-[10px] ${template.color}`}
+                            style={{ height: '180px' }}
+                          ></div>
+                          {/* Info */}
+                          <div className="p-[10px]">
+                            <h5 className="font-semibold mb-[4px] line-clamp-1" style={{ fontSize: '12px' }}>
+                              {template.name}
+                            </h5>
+                            <div className="flex items-center gap-[6px] text-muted-foreground">
+                              <span className="truncate" style={{ fontSize: '10px' }}>{template.author}</span>
+                              <span className="flex-shrink-0" style={{ fontSize: '10px' }}>♥ {template.likes}</span>
+                            </div>
                           </div>
                         </div>
+
+                        {/* Save Button - Show only for categories with existing sheets */}
+                        {isCategoryDisabled(selectedCategory) && (
+                          isTemplateSaved(template) ? (
+                            <div
+                              className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-primary/90 backdrop-blur-sm text-primary-foreground z-10"
+                              title="저장됨"
+                            >
+                              <Check className="w-[14px] h-[14px]" />
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSaveTemplate(selectedCategory, template.name, template);
+                              }}
+                              className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
+                              title="템플릿 저장"
+                            >
+                              <Save className="w-[14px] h-[14px]" />
+                            </button>
+                          )
+                        )}
                       </div>
-                      
-                      {/* Save Button - Show only for categories with existing sheets */}
-                      {isCategoryDisabled(selectedCategory) && (
-                        isTemplateSaved(template) ? (
-                          <div
-                            className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-primary/90 backdrop-blur-sm text-primary-foreground z-10"
-                            title="저장됨"
-                          >
-                            <Check className="w-[14px] h-[14px]" />
-                          </div>
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onSaveTemplate(selectedCategory, template.name, template);
-                            }}
-                            className="absolute bottom-[10px] right-[10px] p-[6px] rounded-[6px] bg-background/90 backdrop-blur-sm border border-border hover:bg-accent transition-colors z-10"
-                            title="템플릿 저장"
-                          >
-                            <Save className="w-[14px] h-[14px]" />
-                          </button>
-                        )
-                      )}
-                    </div>
-                  );
-                })}
-              </ScrollableContainer>
-            </div>
+                    );
+                  })}
+                </ScrollableContainer>
+              </div>
+            )}
           </div>
 
           {/* Right Side - Preview */}

@@ -321,19 +321,14 @@ export default function App() {
                 }`}
                 style={{ width: '577px' }}
               >
-                {selectedSheets.left && (
-                  <>
-                    {/* Sheet Title - Only show when nav is expanded */}
-                    {isNavExpanded && (
-                      <div className="absolute top-[16px] right-[16px] z-40">
-                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                          <span className="font-medium" style={{ fontSize: '14px' }}>
-                            {selectedSheets.left}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                {selectedSheets.left && isNavExpanded && (
+                  <div className="absolute top-[16px] right-[16px] z-40">
+                    <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
+                      <span className="font-medium" style={{ fontSize: '14px' }}>
+                        {selectedSheets.left}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -350,19 +345,14 @@ export default function App() {
                 }`}
                 style={{ width: '577px' }}
               >
-                {selectedSheets.right && (
-                  <>
-                    {/* Sheet Title - Only show when nav is expanded */}
-                    {isNavExpanded && (
-                      <div className="absolute top-[16px] left-[16px] z-40">
-                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                          <span className="font-medium" style={{ fontSize: '14px' }}>
-                            {selectedSheets.right}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                {selectedSheets.right && isNavExpanded && (
+                  <div className="absolute top-[16px] left-[16px] z-40">
+                    <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
+                      <span className="font-medium" style={{ fontSize: '14px' }}>
+                        {selectedSheets.right}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

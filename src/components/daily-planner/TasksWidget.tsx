@@ -375,12 +375,19 @@ export function TasksWidget({
                                 touchStartPos.current = { x: e.clientX, y: e.clientY };
                                 dragDirectionDecided.current = false;
 
+                                // 스와이프 초기화
+                                swipeStartX.current = e.clientX;
+                                swipeCurrentX.current = e.clientX;
+                                isSwipingRef.current = true;
+                                swipeTargetRef.current = { type: 'todo', id: todo.id };
+
                                 const handleMouseMove = (moveE: MouseEvent) => {
                                   if (!touchStartPos.current) return;
 
                                   const deltaX = moveE.clientX - touchStartPos.current.x;
                                   const deltaY = moveE.clientY - touchStartPos.current.y;
 
+                                  // 이미 드래그 모드인 경우
                                   if (window.__todoDragActive) {
                                     setDragPosition({ x: moveE.clientX, y: moveE.clientY });
                                     window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
@@ -390,11 +397,38 @@ export function TasksWidget({
                                     return;
                                   }
 
+                                  // 이미 스와이프 모드로 결정된 경우
+                                  if (dragDirectionDecided.current && isSwipingRef.current && !window.__todoDragActive) {
+                                    swipeCurrentX.current = moveE.clientX;
+                                    const diff = swipeStartX.current - moveE.clientX;
+                                    if (diff > 0) {
+                                      const offset = Math.min(diff, SWIPE_THRESHOLD + 20);
+                                      setSwipeOffset(offset);
+                                      setSwipedTodoId(todo.id);
+                                      setSwipedSubjectId(null);
+                                    }
+                                    return;
+                                  }
+
                                   if (!dragDirectionDecided.current && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
                                     dragDirectionDecided.current = true;
 
-                                    if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.5) {
+                                    // 수평 이동이 수직보다 1.5배 이상 크면 스와이프
+                                    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                                      // 스와이프 모드 - 왼쪽으로만
+                                      if (deltaX < 0) {
+                                        swipeCurrentX.current = moveE.clientX;
+                                        const diff = swipeStartX.current - moveE.clientX;
+                                        if (diff > 0) {
+                                          const offset = Math.min(diff, SWIPE_THRESHOLD + 20);
+                                          setSwipeOffset(offset);
+                                          setSwipedTodoId(todo.id);
+                                          setSwipedSubjectId(null);
+                                        }
+                                      }
+                                    } else {
                                       // 드래그 모드
+                                      isSwipingRef.current = false;
                                       window.__todoDragData = {
                                         todoId: todo.id,
                                         subjectId: todo.subjectId,
@@ -417,12 +451,10 @@ export function TasksWidget({
                                   if (window.__todoDragActive) {
                                     const pos = window.__todoDragPosition;
                                     if (pos) {
-                                      // 드롭 이벤트 발생 (동기적으로 처리됨)
                                       window.dispatchEvent(new CustomEvent('todoDrop', {
                                         detail: { x: pos.x, y: pos.y }
                                       }));
                                     }
-                                    // 이벤트 처리 후 상태 초기화
                                     setTimeout(() => {
                                       setIsDraggingToTimeline(false);
                                       setDraggedTodo(null);
@@ -431,7 +463,20 @@ export function TasksWidget({
                                       window.__todoDragActive = false;
                                       window.__todoDragPosition = null;
                                     }, 0);
+                                  } else if (isSwipingRef.current) {
+                                    // 스와이프 종료
+                                    const diff = swipeStartX.current - swipeCurrentX.current;
+                                    if (diff > SWIPE_THRESHOLD) {
+                                      setSwipeOffset(SWIPE_THRESHOLD);
+                                    } else {
+                                      setSwipedTodoId(null);
+                                      setSwipedSubjectId(null);
+                                      setSwipeOffset(0);
+                                    }
                                   }
+
+                                  isSwipingRef.current = false;
+                                  swipeTargetRef.current = null;
                                   touchStartPos.current = null;
                                   dragDirectionDecided.current = false;
                                   document.removeEventListener('mousemove', handleMouseMove);

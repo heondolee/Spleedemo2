@@ -187,22 +187,10 @@ export function TimelineWidget({
     return Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES, minutes));
   };
 
-  const handleColumnClick = useCallback((e: React.MouseEvent, type: 'plan' | 'done') => {
-    if (isDragging || isResizing) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const startTime = yToMinutes(y);
-    const endTime = Math.min(startTime + 60, TIMELINE_END_MINUTES);
-
-    onAddBlock({
-      todoId: null,
-      subjectId: null,
-      startTime,
-      endTime,
-      type,
-    });
-  }, [isDragging, isResizing, onAddBlock]);
+  // 클릭으로 블록 생성 비활성화 - 드래그 앤 드롭으로만 블록 추가 가능
+  const handleColumnClick = useCallback((_e: React.MouseEvent, _type: 'plan' | 'done') => {
+    // 빈 핸들러 - 클릭 시 아무 동작 안함
+  }, []);
 
   // 드래그 오버 핸들러
   const handleDragOver = useCallback((e: React.DragEvent, type: 'plan' | 'done') => {

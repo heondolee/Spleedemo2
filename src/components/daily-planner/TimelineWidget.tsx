@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   TimelineBlock,
   Subject,
@@ -45,9 +46,14 @@ export function TimelineWidget({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const planColumnRef = useRef<HTMLDivElement>(null);
   const doneColumnRef = useRef<HTMLDivElement>(null);
+  const trashRef = useRef<HTMLDivElement>(null);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState<'top' | 'bottom' | null>(null);
+  const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
+  const [isOverTrash, setIsOverTrash] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
+  const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
 
   // 드래그 앤 드롭 프리뷰 상태
   const [dragPreview, setDragPreview] = useState<{
@@ -202,9 +208,9 @@ export function TimelineWidget({
     return Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES, minutes));
   };
 
-  // 클릭으로 블록 생성 비활성화 - 드래그 앤 드롭으로만 블록 추가 가능
+  // 열 클릭 시 선택 해제
   const handleColumnClick = useCallback((_e: React.MouseEvent, _type: 'plan' | 'done') => {
-    // 빈 핸들러 - 클릭 시 아무 동작 안함
+    setSelectedBlockId(null);
   }, []);
 
   // 드래그 오버 핸들러
@@ -305,6 +311,7 @@ export function TimelineWidget({
     e.preventDefault();
     e.stopPropagation();
 
+    mouseDownPosRef.current = { x: e.clientX, y: e.clientY };
     setActiveBlockId(block.id);
     dragStartRef.current = {
       x: e.clientX,
@@ -315,11 +322,30 @@ export function TimelineWidget({
       cellSpan: block.cellSpan ?? 4,
     };
 
-    setIsDragging(true);
+    let hasMoved = false;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - dragStartRef.current.x;
       const deltaY = moveEvent.clientY - dragStartRef.current.y;
+
+      // 5px 이상 움직이면 드래그로 판단
+      if (!hasMoved && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+        hasMoved = true;
+        setIsDragging(true);
+        setShowTrash(true);
+      }
+
+      if (!hasMoved) return;
+
+      // 휴지통 위에 있는지 확인
+      const trashRect = trashRef.current?.getBoundingClientRect();
+      if (trashRect) {
+        const isOver = moveEvent.clientX >= trashRect.left &&
+                       moveEvent.clientX <= trashRect.right &&
+                       moveEvent.clientY >= trashRect.top &&
+                       moveEvent.clientY <= trashRect.bottom;
+        setIsOverTrash(isOver);
+      }
 
       // 세로 이동 (시간 단위로 스냅)
       const deltaHours = Math.round(deltaY / ROW_HEIGHT);
@@ -338,8 +364,81 @@ export function TimelineWidget({
       onUpdateBlock(block.id, { startTime: newStart, endTime: newEnd, cellStart: newCellStart });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      // 휴지통 위에서 놓으면 삭제
+      const trashRect = trashRef.current?.getBoundingClientRect();
+      if (trashRect && hasMoved) {
+        const isOver = upEvent.clientX >= trashRect.left &&
+                       upEvent.clientX <= trashRect.right &&
+                       upEvent.clientY >= trashRect.top &&
+                       upEvent.clientY <= trashRect.bottom;
+        if (isOver) {
+          onDeleteBlock(block.id);
+          setSelectedBlockId(null);
+        }
+      }
+
+      // 움직이지 않았으면 클릭으로 처리 (선택/선택해제)
+      if (!hasMoved) {
+        setSelectedBlockId(prev => prev === block.id ? null : block.id);
+      }
+
       setIsDragging(false);
+      setIsResizing(null);
+      setActiveBlockId(null);
+      setShowTrash(false);
+      setIsOverTrash(false);
+      mouseDownPosRef.current = null;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [onUpdateBlock, onDeleteBlock]);
+
+
+  // 가로 리사이즈 핸들러
+  const handleResizeMouseDown = useCallback((
+    e: React.MouseEvent,
+    block: TimelineBlock,
+    direction: 'left' | 'right'
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setActiveBlockId(block.id);
+    setIsResizing(direction);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      startTime: block.startTime,
+      endTime: block.endTime,
+      cellStart: block.cellStart ?? 1,
+      cellSpan: block.cellSpan ?? 4,
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - dragStartRef.current.x;
+      const deltaCells = Math.round(deltaX / CELL_WIDTH);
+
+      if (direction === 'left') {
+        // 왼쪽 리사이즈: cellStart 변경, cellSpan 조절
+        const currentEnd = dragStartRef.current.cellStart + dragStartRef.current.cellSpan;
+        let newCellStart = dragStartRef.current.cellStart + deltaCells;
+        newCellStart = Math.max(0, Math.min(currentEnd - 1, newCellStart));
+        const newCellSpan = currentEnd - newCellStart;
+        onUpdateBlock(block.id, { cellStart: newCellStart, cellSpan: newCellSpan });
+      } else {
+        // 오른쪽 리사이즈: cellSpan 변경
+        let newCellSpan = dragStartRef.current.cellSpan + deltaCells;
+        const currentStart = dragStartRef.current.cellStart;
+        newCellSpan = Math.max(1, Math.min(6 - currentStart, newCellSpan));
+        onUpdateBlock(block.id, { cellSpan: newCellSpan });
+      }
+    };
+
+    const handleMouseUp = () => {
       setIsResizing(null);
       setActiveBlockId(null);
       document.removeEventListener('mousemove', handleMouseMove);
@@ -349,11 +448,6 @@ export function TimelineWidget({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }, [onUpdateBlock]);
-
-  const handleBlockDelete = (e: React.MouseEvent, blockId: string) => {
-    e.stopPropagation();
-    onDeleteBlock(blockId);
-  };
 
   const planBlocks = timelineBlocks.filter(b => b.type === 'plan');
   const doneBlocks = timelineBlocks.filter(b => b.type === 'done');
@@ -371,6 +465,7 @@ export function TimelineWidget({
       const hourIndex = Math.floor((block.startTime - TIMELINE_START_MINUTES) / 60);
       const top = hourIndex * ROW_HEIGHT + BLOCK_PADDING; // 행 가운데 정렬
       const isActive = activeBlockId === block.id;
+      const isSelected = selectedBlockId === block.id;
       // 블록 자체 색상 우선, 없으면 과목 색상 사용
       const color = block.color || getSubjectColor(block.subjectId);
       // 가운데 배치 (cellStart=1, cellSpan=4)
@@ -382,8 +477,8 @@ export function TimelineWidget({
       return (
         <div
           key={block.id}
-          className={`absolute rounded-[4px] cursor-move transition-shadow group ${
-            isActive ? 'shadow-md z-20' : 'hover:shadow-sm z-10'
+          className={`absolute rounded-[4px] cursor-move transition-shadow ${
+            isActive ? 'shadow-md z-20' : isSelected ? 'shadow-lg z-30' : 'hover:shadow-sm z-10'
           }`}
           style={{
             top: `${top}px`,
@@ -391,16 +486,63 @@ export function TimelineWidget({
             width: `${width}px`,
             height: `${BLOCK_HEIGHT}px`,
             backgroundColor: color,
+            opacity: isActive && isOverTrash ? 0.5 : 1,
+            outline: isSelected ? '2px solid #2563EB' : 'none',
+            outlineOffset: '1px',
           }}
           onMouseDown={(e) => handleBlockMouseDown(e, block)}
-          onDoubleClick={(e) => handleBlockDelete(e, block.id)}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* 라벨 */}
-          <div className="absolute inset-x-[4px] top-[2px] bottom-[2px] overflow-hidden flex items-center">
+          <div className="absolute inset-x-[4px] top-[2px] bottom-[2px] overflow-hidden flex items-center pointer-events-none">
             <span className="text-[10px] text-white font-medium truncate block text-left">
               {block.label || getTodoLabel(block.todoId)}
             </span>
           </div>
+
+          {/* 선택 시 가로 리사이즈 핸들 표시 - [ ] 대괄호 모양 */}
+          {isSelected && (
+            <>
+              {/* 왼쪽 리사이즈 핸들 [ */}
+              <div
+                className="absolute cursor-ew-resize"
+                style={{
+                  left: '-6px',
+                  top: '0px',
+                  bottom: '0px',
+                  width: '6px',
+                  borderLeft: '3px solid #2563EB',
+                  borderTop: '3px solid #2563EB',
+                  borderBottom: '3px solid #2563EB',
+                  borderRadius: '3px 0 0 3px',
+                  zIndex: 100,
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  handleResizeMouseDown(e, block, 'left');
+                }}
+              />
+              {/* 오른쪽 리사이즈 핸들 ] */}
+              <div
+                className="absolute cursor-ew-resize"
+                style={{
+                  right: '-6px',
+                  top: '0px',
+                  bottom: '0px',
+                  width: '6px',
+                  borderRight: '3px solid #2563EB',
+                  borderTop: '3px solid #2563EB',
+                  borderBottom: '3px solid #2563EB',
+                  borderRadius: '0 3px 3px 0',
+                  zIndex: 100,
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  handleResizeMouseDown(e, block, 'right');
+                }}
+              />
+            </>
+          )}
         </div>
       );
     });
@@ -448,7 +590,7 @@ export function TimelineWidget({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden">
+    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden relative">
       {/* 헤더 */}
       <div className="flex border-b border-border flex-shrink-0 relative">
         {/* Plan 헤더 */}
@@ -621,6 +763,34 @@ export function TimelineWidget({
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH + 32}px`, width: '1px', backgroundColor: 'rgba(128, 128, 128, 0.5)', pointerEvents: 'none' }} />
         </div>
       </div>
+
+      {/* 휴지통 아이콘 - 블록 드래그 시 표시 (Portal로 body에 렌더링) */}
+      {showTrash && createPortal(
+        <div
+          ref={trashRef}
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 w-[56px] h-[56px] rounded-full flex items-center justify-center transition-all ${
+            isOverTrash
+              ? 'bg-red-500 scale-125'
+              : 'bg-gray-300 dark:bg-gray-600'
+          }`}
+          style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)', zIndex: 9999 }}
+        >
+          <svg
+            className={`w-7 h-7 ${isOverTrash ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

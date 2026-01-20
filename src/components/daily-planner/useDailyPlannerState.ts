@@ -150,12 +150,22 @@ export function useDailyPlannerState(initialDate?: string) {
   }, []);
 
   const updateTodo = useCallback((id: string, updates: Partial<Todo>) => {
-    setData(prev => ({
-      ...prev,
-      todos: prev.todos.map(t =>
-        t.id === id ? { ...t, ...updates } : t
-      ),
-    }));
+    setData(prev => {
+      // 색상이 변경되면 연결된 타임라인 블록도 업데이트
+      const updatedBlocks = updates.color
+        ? prev.timelineBlocks.map(b =>
+            b.todoId === id ? { ...b, color: updates.color } : b
+          )
+        : prev.timelineBlocks;
+
+      return {
+        ...prev,
+        todos: prev.todos.map(t =>
+          t.id === id ? { ...t, ...updates } : t
+        ),
+        timelineBlocks: updatedBlocks,
+      };
+    });
   }, []);
 
   const deleteTodo = useCallback((id: string) => {

@@ -541,6 +541,39 @@ export function TimelineWidget({
                   handleResizeMouseDown(e, block, 'right');
                 }}
               />
+              {/* 삭제 버튼 - 블록 아래 중앙 */}
+              <div
+                className="absolute cursor-pointer flex items-center justify-center bg-red-500 hover:bg-red-600 transition-colors"
+                style={{
+                  width: `${Math.round(BLOCK_HEIGHT * 2 / 3)}px`,
+                  height: `${Math.round(BLOCK_HEIGHT * 2 / 3)}px`,
+                  borderRadius: '50%',
+                  bottom: `-${Math.round(BLOCK_HEIGHT * 2 / 3) + 4}px`,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 100,
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onDeleteBlock(block.id);
+                  setSelectedBlockId(null);
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <svg
+                  width={Math.round(BLOCK_HEIGHT * 2 / 3 * 0.6)}
+                  height={Math.round(BLOCK_HEIGHT * 2 / 3 * 0.6)}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </div>
             </>
           )}
         </div>

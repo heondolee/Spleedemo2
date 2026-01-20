@@ -21,6 +21,8 @@ export interface TimelineBlock {
   type: 'plan' | 'done';
   label?: string;
   color?: string; // 블록 색상
+  cellStart?: number; // 가로 시작 위치 (0-5, 10분 단위 셀)
+  cellSpan?: number; // 가로 셀 개수 (1-6, 기본값 3 = 30분)
 }
 
 export interface DailyInfo {

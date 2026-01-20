@@ -31,6 +31,8 @@ interface TimelineWidgetProps {
 
 const ROW_HEIGHT = 24; // 1시간 = 24px (10분 = 4px)
 const CELL_WIDTH = 20; // 10분당 너비
+const BLOCK_HEIGHT = 20; // 블록 높이 (행 높이보다 살짝 작게)
+const BLOCK_PADDING = (ROW_HEIGHT - BLOCK_HEIGHT) / 2; // 상하 여백 (가운데 정렬용)
 
 export function TimelineWidget({
   timelineBlocks,
@@ -54,10 +56,12 @@ export function TimelineWidget({
     type: 'plan' | 'done';
   } | null>(null);
 
-  // Y 좌표를 분 단위로 변환하는 헬퍼 함수
+  // Y 좌표를 분 단위로 변환하는 헬퍼 함수 (시간 단위로 스냅)
   const calcMinutesFromY = (localY: number): number => {
-    const minutes = Math.round(localY / (ROW_HEIGHT / 6)) * 10 + TIMELINE_START_MINUTES;
-    return Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES, minutes));
+    // 시간 단위로 스냅 (60분 = 1시간)
+    const hour = Math.round(localY / ROW_HEIGHT);
+    const minutes = hour * 60 + TIMELINE_START_MINUTES;
+    return Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES - 60, minutes));
   };
 
   // 터치 드래그 이벤트 리스너
@@ -71,7 +75,9 @@ export function TimelineWidget({
       const planRect = planColumnRef.current?.getBoundingClientRect();
       if (planRect && x >= planRect.left && x <= planRect.right && y >= planRect.top && y <= planRect.bottom) {
         const localY = y - planRect.top;
-        const startTime = calcMinutesFromY(localY);
+        // 시간 단위로 스냅
+        const hour = Math.round(localY / ROW_HEIGHT);
+        const startTime = Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES - 60, hour * 60 + TIMELINE_START_MINUTES));
         setDragPreview({
           startTime,
           color: dragData.color,
@@ -84,7 +90,9 @@ export function TimelineWidget({
       const doneRect = doneColumnRef.current?.getBoundingClientRect();
       if (doneRect && x >= doneRect.left && x <= doneRect.right && y >= doneRect.top && y <= doneRect.bottom) {
         const localY = y - doneRect.top;
-        const startTime = calcMinutesFromY(localY);
+        // 시간 단위로 스냅
+        const hour = Math.round(localY / ROW_HEIGHT);
+        const startTime = Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES - 60, hour * 60 + TIMELINE_START_MINUTES));
         setDragPreview({
           startTime,
           color: dragData.color,
@@ -111,7 +119,7 @@ export function TimelineWidget({
       if (planRect && x >= planRect.left && x <= planRect.right && y >= planRect.top && y <= planRect.bottom) {
         const localY = y - planRect.top;
         const startTime = calcMinutesFromY(localY);
-        const endTime = Math.min(startTime + 30, TIMELINE_END_MINUTES);
+        const endTime = startTime + 60; // 1시간
 
         onAddBlock({
           todoId: dragData.todoId,
@@ -121,6 +129,8 @@ export function TimelineWidget({
           type: 'plan',
           label: dragData.content,
           color: dragData.color,
+          cellStart: 1, // 가운데 배치
+          cellSpan: 4,
         });
         setDragPreview(null);
         return;
@@ -131,7 +141,7 @@ export function TimelineWidget({
       if (doneRect && x >= doneRect.left && x <= doneRect.right && y >= doneRect.top && y <= doneRect.bottom) {
         const localY = y - doneRect.top;
         const startTime = calcMinutesFromY(localY);
-        const endTime = Math.min(startTime + 30, TIMELINE_END_MINUTES);
+        const endTime = startTime + 60; // 1시간
 
         onAddBlock({
           todoId: dragData.todoId,
@@ -141,6 +151,8 @@ export function TimelineWidget({
           type: 'done',
           label: dragData.content,
           color: dragData.color,
+          cellStart: 1, // 가운데 배치
+          cellSpan: 4,
         });
         setDragPreview(null);
         return;
@@ -158,10 +170,13 @@ export function TimelineWidget({
     };
   }, [onAddBlock]);
 
-  const dragStartRef = useRef<{ y: number; startTime: number; endTime: number }>({
+  const dragStartRef = useRef<{ x: number; y: number; startTime: number; endTime: number; cellStart: number; cellSpan: number }>({
+    x: 0,
     y: 0,
     startTime: 0,
     endTime: 0,
+    cellStart: 0,
+    cellSpan: 3,
   });
 
   const getSubjectColor = (subjectId: string | null) => {
@@ -199,7 +214,9 @@ export function TimelineWidget({
 
     const rect = e.currentTarget.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const startTime = yToMinutes(y);
+    // 시간 단위로 스냅
+    const hour = Math.round(y / ROW_HEIGHT);
+    const startTime = Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES - 60, hour * 60 + TIMELINE_START_MINUTES));
 
     // 전역 드래그 데이터에서 색상 가져오기
     const dragData = window.__todoDragData;
@@ -218,7 +235,9 @@ export function TimelineWidget({
 
     const rect = e.currentTarget.getBoundingClientRect();
     const y = e.clientY - rect.top;
-    const startTime = yToMinutes(y);
+    // 시간 단위로 스냅
+    const hour = Math.round(y / ROW_HEIGHT);
+    const startTime = Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES - 60, hour * 60 + TIMELINE_START_MINUTES));
 
     // 전역 드래그 데이터에서 색상 가져오기
     const dragData = window.__todoDragData;
@@ -258,8 +277,10 @@ export function TimelineWidget({
 
       const rect = e.currentTarget.getBoundingClientRect();
       const y = e.clientY - rect.top;
-      const startTime = yToMinutes(y);
-      const endTime = Math.min(startTime + 30, TIMELINE_END_MINUTES); // 30분 = 3칸
+      // 시간 단위로 스냅
+      const hour = Math.round(y / ROW_HEIGHT);
+      const startTime = Math.max(TIMELINE_START_MINUTES, Math.min(TIMELINE_END_MINUTES - 60, hour * 60 + TIMELINE_START_MINUTES));
+      const endTime = startTime + 60; // 1시간
 
       onAddBlock({
         todoId: data.todoId,
@@ -269,6 +290,8 @@ export function TimelineWidget({
         type,
         label: data.content,
         color: data.color,
+        cellStart: 1, // 가운데 배치
+        cellSpan: 4,
       });
     } catch {
       // 무시
@@ -277,57 +300,42 @@ export function TimelineWidget({
 
   const handleBlockMouseDown = useCallback((
     e: React.MouseEvent,
-    block: TimelineBlock,
-    action: 'move' | 'top' | 'bottom'
+    block: TimelineBlock
   ) => {
     e.preventDefault();
     e.stopPropagation();
 
     setActiveBlockId(block.id);
     dragStartRef.current = {
+      x: e.clientX,
       y: e.clientY,
       startTime: block.startTime,
       endTime: block.endTime,
+      cellStart: block.cellStart ?? 1,
+      cellSpan: block.cellSpan ?? 4,
     };
 
-    if (action === 'move') {
-      setIsDragging(true);
-    } else {
-      setIsResizing(action);
-    }
+    setIsDragging(true);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - dragStartRef.current.x;
       const deltaY = moveEvent.clientY - dragStartRef.current.y;
-      const deltaMinutes = Math.round(deltaY / (ROW_HEIGHT / 6)) * 10;
 
-      if (action === 'move') {
-        const duration = dragStartRef.current.endTime - dragStartRef.current.startTime;
-        let newStart = dragStartRef.current.startTime + deltaMinutes;
-        let newEnd = newStart + duration;
+      // 세로 이동 (시간 단위로 스냅)
+      const deltaHours = Math.round(deltaY / ROW_HEIGHT);
+      const startHour = Math.floor((dragStartRef.current.startTime - TIMELINE_START_MINUTES) / 60);
+      let newHour = startHour + deltaHours;
+      newHour = Math.max(0, Math.min(TIMELINE_TOTAL_HOURS - 1, newHour));
+      const newStart = newHour * 60 + TIMELINE_START_MINUTES;
+      const newEnd = newStart + 60;
 
-        if (newStart < TIMELINE_START_MINUTES) {
-          newStart = TIMELINE_START_MINUTES;
-          newEnd = newStart + duration;
-        }
-        if (newEnd > TIMELINE_END_MINUTES) {
-          newEnd = TIMELINE_END_MINUTES;
-          newStart = newEnd - duration;
-        }
+      // 가로 이동
+      const deltaCells = Math.round(deltaX / CELL_WIDTH);
+      const currentSpan = dragStartRef.current.cellSpan;
+      let newCellStart = dragStartRef.current.cellStart + deltaCells;
+      newCellStart = Math.max(0, Math.min(6 - currentSpan, newCellStart));
 
-        onUpdateBlock(block.id, { startTime: newStart, endTime: newEnd });
-      } else if (action === 'top') {
-        const newStart = Math.max(
-          TIMELINE_START_MINUTES,
-          Math.min(dragStartRef.current.startTime + deltaMinutes, block.endTime - 10)
-        );
-        onUpdateBlock(block.id, { startTime: newStart });
-      } else if (action === 'bottom') {
-        const newEnd = Math.min(
-          TIMELINE_END_MINUTES,
-          Math.max(dragStartRef.current.endTime + deltaMinutes, block.startTime + 10)
-        );
-        onUpdateBlock(block.id, { endTime: newEnd });
-      }
+      onUpdateBlock(block.id, { startTime: newStart, endTime: newEnd, cellStart: newCellStart });
     };
 
     const handleMouseUp = () => {
@@ -359,11 +367,17 @@ export function TimelineWidget({
 
   const renderBlocks = (blocks: TimelineBlock[]) => {
     return blocks.map(block => {
-      const top = minutesToY(block.startTime);
-      const height = minutesToY(block.endTime) - top;
+      // 시간 기준으로 행 위치 계산 (시간 단위로 스냅)
+      const hourIndex = Math.floor((block.startTime - TIMELINE_START_MINUTES) / 60);
+      const top = hourIndex * ROW_HEIGHT + BLOCK_PADDING; // 행 가운데 정렬
       const isActive = activeBlockId === block.id;
       // 블록 자체 색상 우선, 없으면 과목 색상 사용
       const color = block.color || getSubjectColor(block.subjectId);
+      // 가운데 배치 (cellStart=1, cellSpan=4)
+      const cellStart = block.cellStart ?? 1;
+      const cellSpan = block.cellSpan ?? 4;
+      const left = cellStart * CELL_WIDTH + 1;
+      const width = cellSpan * CELL_WIDTH - 2;
 
       return (
         <div
@@ -373,32 +387,20 @@ export function TimelineWidget({
           }`}
           style={{
             top: `${top}px`,
-            left: '2px',
-            width: `${3 * CELL_WIDTH - 4}px`, // 3칸 = 60px - 4px 여백
-            height: `${Math.max(height, 4)}px`,
+            left: `${left}px`,
+            width: `${width}px`,
+            height: `${BLOCK_HEIGHT}px`,
             backgroundColor: color,
           }}
-          onMouseDown={(e) => handleBlockMouseDown(e, block, 'move')}
+          onMouseDown={(e) => handleBlockMouseDown(e, block)}
           onDoubleClick={(e) => handleBlockDelete(e, block.id)}
         >
-          {/* 상단 리사이즈 */}
-          <div
-            className="absolute top-0 left-0 right-0 h-[6px] cursor-n-resize"
-            onMouseDown={(e) => handleBlockMouseDown(e, block, 'top')}
-          />
           {/* 라벨 */}
-          {height > 16 && (
-            <div className="absolute inset-x-[2px] top-[2px] bottom-[2px] overflow-hidden">
-              <span className="text-[10px] text-white font-medium truncate block text-left">
-                {block.label || getTodoLabel(block.todoId)}
-              </span>
-            </div>
-          )}
-          {/* 하단 리사이즈 */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-[6px] cursor-s-resize"
-            onMouseDown={(e) => handleBlockMouseDown(e, block, 'bottom')}
-          />
+          <div className="absolute inset-x-[4px] top-[2px] bottom-[2px] overflow-hidden flex items-center">
+            <span className="text-[10px] text-white font-medium truncate block text-left">
+              {block.label || getTodoLabel(block.todoId)}
+            </span>
+          </div>
         </div>
       );
     });
@@ -531,17 +533,23 @@ export function TimelineWidget({
           >
             {renderGrid()}
             {renderBlocks(planBlocks)}
-            {/* 드래그 프리뷰 */}
-            {dragPreview && dragPreview.type === 'plan' && (
-              <div
-                className="absolute left-[2px] right-[2px] rounded-[4px] pointer-events-none opacity-60"
-                style={{
-                  top: `${minutesToY(dragPreview.startTime)}px`,
-                  height: `${minutesToY(dragPreview.startTime + 30) - minutesToY(dragPreview.startTime)}px`,
-                  backgroundColor: dragPreview.color,
-                }}
-              />
-            )}
+            {/* 드래그 프리뷰 - 행 가운데 배치 */}
+            {dragPreview && dragPreview.type === 'plan' && (() => {
+              const hourIndex = Math.floor((dragPreview.startTime - TIMELINE_START_MINUTES) / 60);
+              const top = hourIndex * ROW_HEIGHT + BLOCK_PADDING;
+              return (
+                <div
+                  className="absolute rounded-[4px] pointer-events-none opacity-60"
+                  style={{
+                    top: `${top}px`,
+                    left: `${1 * CELL_WIDTH + 1}px`,
+                    width: `${4 * CELL_WIDTH - 2}px`,
+                    height: `${BLOCK_HEIGHT}px`,
+                    backgroundColor: dragPreview.color,
+                  }}
+                />
+              );
+            })()}
           </div>
 
           {/* Time 열 */}
@@ -589,17 +597,23 @@ export function TimelineWidget({
           >
             {renderGrid()}
             {renderBlocks(doneBlocks)}
-            {/* 드래그 프리뷰 */}
-            {dragPreview && dragPreview.type === 'done' && (
-              <div
-                className="absolute left-[2px] right-[2px] rounded-[4px] pointer-events-none opacity-60"
-                style={{
-                  top: `${minutesToY(dragPreview.startTime)}px`,
-                  height: `${minutesToY(dragPreview.startTime + 30) - minutesToY(dragPreview.startTime)}px`,
-                  backgroundColor: dragPreview.color,
-                }}
-              />
-            )}
+            {/* 드래그 프리뷰 - 행 가운데 배치 */}
+            {dragPreview && dragPreview.type === 'done' && (() => {
+              const hourIndex = Math.floor((dragPreview.startTime - TIMELINE_START_MINUTES) / 60);
+              const top = hourIndex * ROW_HEIGHT + BLOCK_PADDING;
+              return (
+                <div
+                  className="absolute rounded-[4px] pointer-events-none opacity-60"
+                  style={{
+                    top: `${top}px`,
+                    left: `${1 * CELL_WIDTH + 1}px`,
+                    width: `${4 * CELL_WIDTH - 2}px`,
+                    height: `${BLOCK_HEIGHT}px`,
+                    backgroundColor: dragPreview.color,
+                  }}
+                />
+              );
+            })()}
           </div>
 
           {/* 열 구분선 (Plan|Time, Time|Done) */}

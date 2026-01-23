@@ -168,11 +168,11 @@ export function AddAppSheetPage({
       />
 
       {/* Sheet */}
-      <div 
+      <div
         className={`absolute left-0 right-0 bottom-0 bg-background rounded-t-[24px] z-[70] transition-transform duration-500 ease-out ${
           isOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
-        style={{ height: '794px' }}
+        style={{ height: '834px' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-[24px] border-b border-border" style={{ height: '56px' }}>
@@ -237,9 +237,9 @@ export function AddAppSheetPage({
         </div>
 
         {/* Content - Split View */}
-        <div className="flex" style={{ height: 'calc(794px - 56px - 52px)' }}>
+        <div className="flex" style={{ height: 'calc(834px - 56px - 52px)' }}>
           {/* Left Side - Horizontal Scroll Template List */}
-          <div className="border-r border-border overflow-y-auto" style={{ width: '577px' }}>
+          <div className="border-r border-border overflow-y-auto" style={{ width: '597px' }}>
             {/* My Templates Section - Shown at top (if category exists) */}
             {isCategoryDisabled(selectedCategory) && (
               <div className="p-[20px] border-b border-border">

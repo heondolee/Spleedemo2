@@ -300,21 +300,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-8 gap-[16px]">
-      {/* iPad Pro 11" Frame - Landscape - 1194 × 834 px */}
+      {/* iPad Pro 11" Frame - Landscape - 내부 화면 1194 × 834 px */}
       <div
         className="bg-black rounded-[40px] shadow-2xl relative overflow-hidden"
         style={{
-          width: '1194px',
-          height: '834px',
+          width: '1234px',
+          height: '874px',
           padding: '20px'
         }}
       >
-        {/* Screen Area */}
-        <div 
+        {/* Screen Area - 1194 × 834 px */}
+        <div
           className="bg-background rounded-[24px] w-full h-full overflow-hidden relative"
           style={{
-            width: '1154px',
-            height: '794px'
+            width: '1194px',
+            height: '834px'
           }}
         >
           {/* App Content */}
@@ -343,7 +343,7 @@ export default function App() {
                 className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
                   isNavExpanded && focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
                 }`}
-                style={{ width: '577px' }}
+                style={{ width: '597px' }}
               >
                 {selectedSheets.left && isNavExpanded && (
                   <div className="absolute top-[16px] right-[16px] z-40">
@@ -371,7 +371,7 @@ export default function App() {
                 className={`h-full bg-card transition-all duration-200 relative ${
                   isNavExpanded && focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
                 }`}
-                style={{ width: '577px' }}
+                style={{ width: '597px' }}
               >
                 {/* 편집 모드일 때 편집기 표시 */}
                 {editingSheet ? (

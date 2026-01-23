@@ -55,8 +55,9 @@ This design system provides comprehensive guidelines for building a minimalistic
 Primary optimization for **iPad Pro 11"** (1194 × 834 pt landscape) with responsive adaptation for other sizes.
 
 ### Orientation
-- **Primary**: Landscape mode (1194 × 834 pt)
-- **Content Area**: 1154 × 794 pt (excluding 20pt bezel on all sides)
+- **Primary**: Landscape mode
+- **Content Area**: 1194 × 834 pt (actual screen area)
+- **Device Frame**: 1234 × 874 pt (including 20pt bezel on all sides)
 
 ---
 
@@ -213,7 +214,9 @@ Border radius:           8pt
 #### Layout
 ```css
 Device bezel:            20pt (all sides)
-Content area:            1154pt × 794pt (landscape)
+Device frame:            1234pt × 874pt (with bezel)
+Content area:            1194pt × 834pt (actual screen)
+Split view width:        597pt × 834pt (each panel)
 Page padding:            24pt
 Section spacing:         32pt
 Grid gap:                24pt
@@ -230,25 +233,25 @@ Grid gap:                24pt
 
 ### iPad Pro 11" Landscape Layout
 ```
-Total: 1194 × 834 pt
-Bezel: 20pt all sides
-Content: 1154 × 794 pt
+Content Area: 1194 × 834 pt (actual screen)
+Device Frame: 1234 × 874 pt (with 20pt bezel)
+Split Panel:  597 × 834 pt (each panel)
 ```
 
 ### Grid System
 
-#### Card Grid (Landscape 1154pt wide content area)
+#### Card Grid (Landscape 1194pt wide content area)
 ```css
 Columns: 3-4 (depending on card size)
 Gap: 24pt
 Card min-width: 280pt
-Card typical: ~340pt wide
+Card typical: ~360pt wide
 ```
 
 #### Sidebar + Content Layout
 ```css
 Sidebar width:           240pt (expanded), 64pt (collapsed)
-Main content:            Remaining width (914pt or 1090pt)
+Main content:            Remaining width (954pt or 1130pt)
 Sidebar padding:         16pt
 Content padding:         24pt
 ```
@@ -434,9 +437,10 @@ All spacing, sizing, and dimensions use **natural numbers** (no decimals):
 ### Device Frame
 
 ```css
-Total device:        1194 × 834 px
+Content area:       1194 × 834 px (actual screen)
+Device frame:       1234 × 874 px (with bezel)
 Bezel:              20px all sides
-Content area:       1154 × 794 px
+Split panel:        597 × 834 px (each)
 Home indicator:     140 × 4 px (bottom center)
 Border radius:      40px (device), 24px (screen)
 ```

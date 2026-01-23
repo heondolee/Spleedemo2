@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   SELECTED_SHEETS: 'splee_selectedSheets',
   APP_SHEETS: 'splee_appSheets',
   SAVED_TEMPLATES: 'splee_savedTemplates',
+  THEME: 'splee_theme',
 } as const;
 
 // localStorage 헬퍼 함수
@@ -40,6 +41,9 @@ export default function App() {
   );
   const [showAddSheet, setShowAddSheet] = useState(false); // 이건 저장하지 않음 (임시 UI 상태)
   const [editingSheet, setEditingSheet] = useState<string | null>(null); // 현재 편집 중인 앱시트 이름
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    getFromStorage(STORAGE_KEYS.THEME, 'light')
+  );
   const [selectedSheets, setSelectedSheets] = useState<{
     left: string | null;
     right: string | null;
@@ -81,6 +85,16 @@ export default function App() {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SAVED_TEMPLATES, savedTemplates);
   }, [savedTemplates]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.THEME, theme);
+    // html 요소에 dark 클래스 추가/제거
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   const handleSheetSelect = (sheetName: string, position: 'left' | 'right') => {
     setSelectedSheets(prev => ({
@@ -333,6 +347,8 @@ export default function App() {
               onRenameSheet={handleRenameSheet}
               onReorderSheets={handleReorderSheets}
               onEditSheet={handleEditSheet}
+              theme={theme}
+              onThemeChange={setTheme}
             />
 
             {/* Main Content Area - Fixed Size */}

@@ -1,4 +1,4 @@
-import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User, Globe, FileText, Shield, Info, MessageCircle, Gift, X, ArrowLeft, Check, Mail, ExternalLink } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User, Globe, FileText, Shield, Info, MessageCircle, Gift, X, ArrowLeft, Check, Mail, ExternalLink, Sun, Moon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { SheetContextMenu } from './SheetContextMenu';
 
@@ -24,6 +24,8 @@ interface NavigationProps {
   onRenameSheet: (sheetId: string, newName: string) => void;
   onReorderSheets: (newOrder: AppSheet[]) => void;
   onEditSheet: (sheetName: string) => void;
+  theme: 'light' | 'dark';
+  onThemeChange: (theme: 'light' | 'dark') => void;
 }
 
 const settingsItems = [
@@ -47,7 +49,9 @@ export function Navigation({
   onDeleteSheet,
   onRenameSheet,
   onReorderSheets,
-  onEditSheet
+  onEditSheet,
+  theme,
+  onThemeChange
 }: NavigationProps) {
   const [contextMenu, setContextMenu] = useState<{
     sheetId: string;
@@ -57,6 +61,9 @@ export function Navigation({
   } | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showThemeDialog, setShowThemeDialog] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [settingsView, setSettingsView] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('ko');
   const [giftCode, setGiftCode] = useState('');
@@ -294,7 +301,7 @@ export function Navigation({
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: 테마 설정 열기
+                        setShowThemeDialog(true);
                       }}
                       className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
                     >
@@ -305,7 +312,7 @@ export function Navigation({
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: 플랜 페이지 열기
+                        setShowPlanDialog(true);
                       }}
                       className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
                     >
@@ -776,6 +783,238 @@ export function Navigation({
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Theme Dialog */}
+      {showThemeDialog && (
+        <div
+          className="absolute inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm"
+          onClick={() => setShowThemeDialog(false)}
+        >
+          <div
+            className="bg-background rounded-[16px] border border-border shadow-xl overflow-hidden"
+            style={{ width: '360px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-[24px] py-[20px] border-b border-border flex items-center justify-between">
+              <h2 className="font-semibold" style={{ fontSize: '18px' }}>테마</h2>
+              <button
+                onClick={() => setShowThemeDialog(false)}
+                className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+              >
+                <X className="w-[18px] h-[18px]" />
+              </button>
+            </div>
+
+            {/* Theme Options */}
+            <div className="p-[16px] grid grid-cols-2 gap-[12px]">
+              {/* Light Theme */}
+              <button
+                onClick={() => {
+                  onThemeChange('light');
+                  setShowThemeDialog(false);
+                }}
+                className={`p-[16px] rounded-[12px] border-2 transition-all ${
+                  theme === 'light' ? 'border-primary' : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <div className="w-full aspect-[4/3] rounded-[8px] bg-white border border-border mb-[12px] flex items-center justify-center">
+                  <Sun className="w-[32px] h-[32px] text-yellow-500" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium" style={{ fontSize: '15px' }}>라이트</span>
+                  {theme === 'light' && (
+                    <Check className="w-[18px] h-[18px] text-primary" />
+                  )}
+                </div>
+              </button>
+
+              {/* Dark Theme */}
+              <button
+                onClick={() => {
+                  onThemeChange('dark');
+                  setShowThemeDialog(false);
+                }}
+                className={`p-[16px] rounded-[12px] border-2 transition-all ${
+                  theme === 'dark' ? 'border-primary' : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <div className="w-full aspect-[4/3] rounded-[8px] bg-gray-900 border border-gray-700 mb-[12px] flex items-center justify-center">
+                  <Moon className="w-[32px] h-[32px] text-blue-400" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-medium" style={{ fontSize: '15px' }}>다크</span>
+                  {theme === 'dark' && (
+                    <Check className="w-[18px] h-[18px] text-primary" />
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Plan Dialog */}
+      {showPlanDialog && (
+        <div
+          className="absolute inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm"
+          onClick={() => {
+            setShowPlanDialog(false);
+            setSelectedPlan(null);
+          }}
+        >
+          <div
+            className="bg-background rounded-[16px] border border-border shadow-xl overflow-hidden flex flex-col"
+            style={{ width: '520px', height: '560px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-[24px] py-[20px] border-b border-border flex items-center justify-between">
+              <h2 className="font-semibold" style={{ fontSize: '18px' }}>플랜</h2>
+              <button
+                onClick={() => {
+                  setShowPlanDialog(false);
+                  setSelectedPlan(null);
+                }}
+                className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+              >
+                <X className="w-[18px] h-[18px]" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 p-[24px] overflow-y-auto">
+              {/* Current Plan */}
+              <div className="mb-[24px] p-[16px] rounded-[12px] bg-primary/5 border border-primary/20">
+                <p className="text-muted-foreground mb-[4px]" style={{ fontSize: '13px' }}>현재 플랜</p>
+                <p className="font-semibold" style={{ fontSize: '18px' }}>무료 플랜</p>
+              </div>
+
+              {/* Plan Table */}
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-muted/50 border-b border-border">
+                    <th className="text-left px-[16px] py-[12px] font-medium text-muted-foreground" style={{ fontSize: '13px', width: '25%' }}>기간</th>
+                    <th className="text-left px-[16px] py-[12px] font-medium text-muted-foreground" style={{ fontSize: '13px', width: '25%' }}>가격</th>
+                    <th className="text-left px-[16px] py-[12px] font-medium text-muted-foreground" style={{ fontSize: '13px', width: '25%' }}>월 환산</th>
+                    <th className="text-left px-[16px] py-[12px] font-medium text-muted-foreground" style={{ fontSize: '13px', width: '25%' }}>할인</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* 3개월 */}
+                  <tr
+                    onClick={() => setSelectedPlan('3month')}
+                    className={`border-b border-border cursor-pointer transition-colors ${
+                      selectedPlan === '3month' ? 'bg-primary/10' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <td className="px-[16px] py-[14px]">
+                      <div className="flex items-center gap-[8px]">
+                        <div className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${
+                          selectedPlan === '3month' ? 'border-primary' : 'border-border'
+                        }`}>
+                          {selectedPlan === '3month' && <div className="w-[10px] h-[10px] rounded-full bg-primary" />}
+                        </div>
+                        <span className="font-medium" style={{ fontSize: '14px' }}>3개월</span>
+                      </div>
+                    </td>
+                    <td className="px-[16px] py-[14px]" style={{ fontSize: '14px' }}>₩7,900</td>
+                    <td className="px-[16px] py-[14px] text-muted-foreground" style={{ fontSize: '14px' }}>₩2,633</td>
+                    <td className="px-[16px] py-[14px] text-green-600" style={{ fontSize: '14px' }}>-33%</td>
+                  </tr>
+
+                  {/* 6개월 */}
+                  <tr
+                    onClick={() => setSelectedPlan('6month')}
+                    className={`border-b border-border cursor-pointer transition-colors ${
+                      selectedPlan === '6month' ? 'bg-primary/10' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <td className="px-[16px] py-[14px]">
+                      <div className="flex items-center gap-[8px]">
+                        <div className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${
+                          selectedPlan === '6month' ? 'border-primary' : 'border-border'
+                        }`}>
+                          {selectedPlan === '6month' && <div className="w-[10px] h-[10px] rounded-full bg-primary" />}
+                        </div>
+                        <span className="font-medium" style={{ fontSize: '14px' }}>6개월</span>
+                      </div>
+                    </td>
+                    <td className="px-[16px] py-[14px]" style={{ fontSize: '14px' }}>₩13,900</td>
+                    <td className="px-[16px] py-[14px] text-muted-foreground" style={{ fontSize: '14px' }}>₩2,317</td>
+                    <td className="px-[16px] py-[14px] text-green-600" style={{ fontSize: '14px' }}>-41%</td>
+                  </tr>
+
+                  {/* 1년 */}
+                  <tr
+                    onClick={() => setSelectedPlan('1year')}
+                    className={`border-b border-border cursor-pointer transition-colors ${
+                      selectedPlan === '1year' ? 'bg-primary/10' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <td className="px-[16px] py-[14px]">
+                      <div className="flex items-center gap-[8px]">
+                        <div className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${
+                          selectedPlan === '1year' ? 'border-primary' : 'border-border'
+                        }`}>
+                          {selectedPlan === '1year' && <div className="w-[10px] h-[10px] rounded-full bg-primary" />}
+                        </div>
+                        <span className="font-medium" style={{ fontSize: '14px' }}>1년</span>
+                      </div>
+                    </td>
+                    <td className="px-[16px] py-[14px]" style={{ fontSize: '14px' }}>₩21,900</td>
+                    <td className="px-[16px] py-[14px] text-muted-foreground" style={{ fontSize: '14px' }}>₩1,825</td>
+                    <td className="px-[16px] py-[14px] text-green-600" style={{ fontSize: '14px' }}>-53%</td>
+                  </tr>
+
+                  {/* 평생 이용 */}
+                  <tr
+                    onClick={() => setSelectedPlan('lifetime')}
+                    className={`cursor-pointer transition-colors ${
+                      selectedPlan === 'lifetime' ? 'bg-primary/10' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <td className="px-[16px] py-[14px]">
+                      <div className="flex items-center gap-[8px]">
+                        <div className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${
+                          selectedPlan === 'lifetime' ? 'border-primary' : 'border-border'
+                        }`}>
+                          {selectedPlan === 'lifetime' && <div className="w-[10px] h-[10px] rounded-full bg-primary" />}
+                        </div>
+                        <span className="font-medium" style={{ fontSize: '14px' }}>평생 이용</span>
+                      </div>
+                    </td>
+                    <td className="px-[16px] py-[14px]" style={{ fontSize: '14px' }}>₩69,000</td>
+                    <td className="px-[16px] py-[14px] text-muted-foreground" style={{ fontSize: '14px' }}>—</td>
+                    <td className="px-[16px] py-[14px] text-muted-foreground" style={{ fontSize: '13px' }}>3년 쓰면 본전</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Info */}
+              <p className="mt-[16px] text-center text-muted-foreground" style={{ fontSize: '12px' }}>
+                모든 플랜은 VAT 포함 가격입니다
+              </p>
+            </div>
+
+            {/* Footer - Payment Button */}
+            <div className="px-[24px] py-[16px] border-t border-border">
+              <button
+                onClick={() => {
+                  if (selectedPlan) {
+                    alert(`${selectedPlan} 플랜 결제 페이지로 이동합니다.`);
+                  }
+                }}
+                disabled={!selectedPlan}
+                className="w-full h-[48px] rounded-[12px] bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontSize: '16px' }}
+              >
+                {selectedPlan ? '결제하기' : '플랜을 선택해주세요'}
+              </button>
             </div>
           </div>
         </div>

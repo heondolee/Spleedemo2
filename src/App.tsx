@@ -39,6 +39,7 @@ export default function App() {
     getFromStorage(STORAGE_KEYS.FOCUSED_SHEET, 'right')
   );
   const [showAddSheet, setShowAddSheet] = useState(false); // 이건 저장하지 않음 (임시 UI 상태)
+  const [editingSheet, setEditingSheet] = useState<string | null>(null); // 현재 편집 중인 앱시트 이름
   const [selectedSheets, setSelectedSheets] = useState<{
     left: string | null;
     right: string | null;
@@ -256,6 +257,38 @@ export default function App() {
     setShowAddSheet(false);
   };
 
+  const handleEditSheet = (sheetName: string) => {
+    // 1. 네비게이션 닫기
+    setIsNavExpanded(false);
+
+    // 2. 해당 시트가 오른쪽에 있으면 왼쪽으로 이동
+    if (selectedSheets.right === sheetName && selectedSheets.left !== sheetName) {
+      setSelectedSheets(prev => ({
+        left: sheetName,
+        right: null
+      }));
+    } else if (selectedSheets.left !== sheetName) {
+      // 어디에도 없으면 왼쪽에 배치
+      setSelectedSheets(prev => ({
+        left: sheetName,
+        right: null
+      }));
+    } else {
+      // 이미 왼쪽에 있으면 오른쪽만 비우기
+      setSelectedSheets(prev => ({
+        ...prev,
+        right: null
+      }));
+    }
+
+    // 3. 편집 모드 활성화
+    setEditingSheet(sheetName);
+  };
+
+  const handleCloseEditor = () => {
+    setEditingSheet(null);
+  };
+
   const handleClearLocalStorage = () => {
     // 모든 splee 관련 localStorage 삭제
     Object.values(STORAGE_KEYS).forEach(key => {
@@ -287,7 +320,7 @@ export default function App() {
           {/* App Content */}
           <div className="w-full h-full relative">
             {/* Navigation Bar - Overlay */}
-            <Navigation 
+            <Navigation
               isExpanded={isNavExpanded}
               onToggle={handleNavToggle}
               appSheets={appSheets}
@@ -299,6 +332,7 @@ export default function App() {
               onDeleteSheet={handleDeleteSheet}
               onRenameSheet={handleRenameSheet}
               onReorderSheets={handleReorderSheets}
+              onEditSheet={handleEditSheet}
             />
 
             {/* Main Content Area - Fixed Size */}
@@ -339,18 +373,45 @@ export default function App() {
                 }`}
                 style={{ width: '577px' }}
               >
-                {selectedSheets.right && isNavExpanded && (
-                  <div className="absolute top-[16px] left-[16px] z-40">
-                    <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                      <span className="font-medium" style={{ fontSize: '14px' }}>
-                        {selectedSheets.right}
-                      </span>
+                {/* 편집 모드일 때 편집기 표시 */}
+                {editingSheet ? (
+                  <div className="w-full h-full flex flex-col">
+                    {/* 편집기 헤더 */}
+                    <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-border">
+                      <h2 className="font-medium" style={{ fontSize: '18px' }}>
+                        {editingSheet} 수정
+                      </h2>
+                      <button
+                        onClick={handleCloseEditor}
+                        className="px-[16px] py-[8px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                        style={{ fontSize: '14px' }}
+                      >
+                        완료
+                      </button>
+                    </div>
+                    {/* 편집기 내용 - 빈 화면 */}
+                    <div className="flex-1 flex items-center justify-center">
+                      <p className="text-muted-foreground" style={{ fontSize: '16px' }}>
+                        앱시트 편집 화면
+                      </p>
                     </div>
                   </div>
-                )}
-                {/* Sheet Content */}
-                {selectedSheets.right === '하루 계획' && (
-                  <DailyPlannerSheet />
+                ) : (
+                  <>
+                    {selectedSheets.right && isNavExpanded && (
+                      <div className="absolute top-[16px] left-[16px] z-40">
+                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
+                          <span className="font-medium" style={{ fontSize: '14px' }}>
+                            {selectedSheets.right}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Sheet Content */}
+                    {selectedSheets.right === '하루 계획' && (
+                      <DailyPlannerSheet />
+                    )}
+                  </>
                 )}
               </div>
             </div>

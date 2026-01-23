@@ -23,12 +23,13 @@ interface NavigationProps {
   onDeleteSheet: (sheetId: string) => void;
   onRenameSheet: (sheetId: string, newName: string) => void;
   onReorderSheets: (newOrder: AppSheet[]) => void;
+  onEditSheet: (sheetName: string) => void;
 }
 
-export function Navigation({ 
-  isExpanded, 
-  onToggle, 
-  appSheets, 
+export function Navigation({
+  isExpanded,
+  onToggle,
+  appSheets,
   selectedSheets,
   onSheetSelect,
   focusedSheet,
@@ -36,7 +37,8 @@ export function Navigation({
   setShowAddSheet,
   onDeleteSheet,
   onRenameSheet,
-  onReorderSheets
+  onReorderSheets,
+  onEditSheet
 }: NavigationProps) {
   const [contextMenu, setContextMenu] = useState<{
     sheetId: string;
@@ -375,6 +377,10 @@ export function Navigation({
           }}
           onDelete={() => {
             onDeleteSheet(contextMenu.sheetId);
+            setContextMenu(null);
+          }}
+          onEdit={() => {
+            onEditSheet(contextMenu.sheetName);
             setContextMenu(null);
           }}
         />

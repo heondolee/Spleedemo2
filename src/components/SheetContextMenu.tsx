@@ -1,4 +1,4 @@
-import { Edit2, Trash2, Type } from 'lucide-react';
+import { Pencil, Trash2, Type } from 'lucide-react';
 
 interface SheetContextMenuProps {
   sheetId: string;
@@ -7,6 +7,7 @@ interface SheetContextMenuProps {
   onClose: () => void;
   onRename: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 export function SheetContextMenu({
@@ -16,6 +17,7 @@ export function SheetContextMenu({
   onClose,
   onRename,
   onDelete,
+  onEdit,
 }: SheetContextMenuProps) {
   return (
     <>
@@ -37,6 +39,17 @@ export function SheetContextMenu({
         <div className="py-[4px]">
           <button
             onClick={() => {
+              onEdit();
+              onClose();
+            }}
+            className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+          >
+            <Pencil className="w-[16px] h-[16px] text-muted-foreground" />
+            <span style={{ fontSize: '14px' }}>수정</span>
+          </button>
+
+          <button
+            onClick={() => {
               onRename();
               onClose();
             }}
@@ -45,7 +58,7 @@ export function SheetContextMenu({
             <Type className="w-[16px] h-[16px] text-muted-foreground" />
             <span style={{ fontSize: '14px' }}>이름 변경</span>
           </button>
-          
+
           <button
             onClick={() => {
               onDelete();

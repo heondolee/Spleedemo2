@@ -1,4 +1,4 @@
-import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User, Globe, FileText, Shield, Info, MessageCircle, Gift, X } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User, Globe, FileText, Shield, Info, MessageCircle, Gift, X, ArrowLeft, Check, Mail, ExternalLink } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { SheetContextMenu } from './SheetContextMenu';
 
@@ -57,6 +57,9 @@ export function Navigation({
   } | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsView, setSettingsView] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState('ko');
+  const [giftCode, setGiftCode] = useState('');
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -479,56 +482,301 @@ export function Navigation({
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/50 z-[100]"
-            onClick={() => setShowSettings(false)}
+            onClick={() => {
+              setShowSettings(false);
+              setSettingsView(null);
+            }}
           />
           {/* Dialog */}
           <div
             className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background rounded-[16px] border border-border shadow-xl z-[101] overflow-hidden"
-            style={{ width: '400px' }}
+            style={{ width: '480px', maxHeight: '600px' }}
           >
             {/* Header */}
             <div className="px-[24px] py-[20px] border-b border-border flex items-center justify-between">
-              <h2 className="font-semibold" style={{ fontSize: '18px' }}>설정</h2>
+              <div className="flex items-center gap-[12px]">
+                {settingsView && (
+                  <button
+                    onClick={() => setSettingsView(null)}
+                    className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+                  >
+                    <ArrowLeft className="w-[18px] h-[18px]" />
+                  </button>
+                )}
+                <h2 className="font-semibold" style={{ fontSize: '18px' }}>
+                  {settingsView === 'language' && '언어'}
+                  {settingsView === 'terms' && '이용약관'}
+                  {settingsView === 'privacy' && '개인정보처리방침'}
+                  {settingsView === 'version' && '버전정보'}
+                  {settingsView === 'contact' && '문의하기'}
+                  {settingsView === 'giftcode' && '선물티켓코드'}
+                  {!settingsView && '설정'}
+                </h2>
+              </div>
               <button
-                onClick={() => setShowSettings(false)}
+                onClick={() => {
+                  setShowSettings(false);
+                  setSettingsView(null);
+                }}
                 className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
               >
                 <X className="w-[18px] h-[18px]" />
               </button>
             </div>
 
-            {/* Settings Items */}
-            <div className="py-[8px]">
-              {settingsItems.map((item) => {
-                const Icon = item.icon;
-                return (
+            {/* Content */}
+            <div className="overflow-y-auto" style={{ maxHeight: '520px' }}>
+              {/* Main Settings List */}
+              {!settingsView && (
+                <div className="py-[8px]">
+                  {settingsItems.map((item) => {
+                    const Icon = item.icon;
+                    const displayValue = item.id === 'language'
+                      ? (selectedLanguage === 'ko' ? '한국어' : 'English')
+                      : item.value;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setSettingsView(item.id)}
+                        className="w-full flex items-center justify-between px-[24px] py-[16px] hover:bg-accent transition-colors"
+                        style={{ minHeight: '56px' }}
+                      >
+                        <div className="flex items-center gap-[16px]">
+                          <Icon className="w-[20px] h-[20px] text-muted-foreground" />
+                          <span className="font-medium" style={{ fontSize: '16px' }}>
+                            {item.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-[8px]">
+                          {displayValue && (
+                            <span className="text-muted-foreground" style={{ fontSize: '14px' }}>
+                              {displayValue}
+                            </span>
+                          )}
+                          {item.hasArrow && (
+                            <ChevronRight className="w-[16px] h-[16px] text-muted-foreground" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Language View */}
+              {settingsView === 'language' && (
+                <div className="py-[8px]">
                   <button
-                    key={item.id}
-                    onClick={() => {
-                      console.log('Settings item clicked:', item.id);
-                    }}
+                    onClick={() => setSelectedLanguage('ko')}
                     className="w-full flex items-center justify-between px-[24px] py-[16px] hover:bg-accent transition-colors"
                     style={{ minHeight: '56px' }}
                   >
-                    <div className="flex items-center gap-[16px]">
-                      <Icon className="w-[20px] h-[20px] text-muted-foreground" />
-                      <span className="font-medium" style={{ fontSize: '16px' }}>
-                        {item.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-[8px]">
-                      {item.value && (
-                        <span className="text-muted-foreground" style={{ fontSize: '14px' }}>
-                          {item.value}
-                        </span>
-                      )}
-                      {item.hasArrow && (
-                        <ChevronRight className="w-[16px] h-[16px] text-muted-foreground" />
-                      )}
-                    </div>
+                    <span className="font-medium" style={{ fontSize: '16px' }}>한국어</span>
+                    {selectedLanguage === 'ko' && (
+                      <Check className="w-[20px] h-[20px] text-primary" />
+                    )}
                   </button>
-                );
-              })}
+                  <button
+                    onClick={() => setSelectedLanguage('en')}
+                    className="w-full flex items-center justify-between px-[24px] py-[16px] hover:bg-accent transition-colors"
+                    style={{ minHeight: '56px' }}
+                  >
+                    <span className="font-medium" style={{ fontSize: '16px' }}>English</span>
+                    {selectedLanguage === 'en' && (
+                      <Check className="w-[20px] h-[20px] text-primary" />
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Terms View */}
+              {settingsView === 'terms' && (
+                <div className="p-[24px]">
+                  <div className="prose prose-sm" style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                    <h3 className="font-semibold mb-[16px]" style={{ fontSize: '16px' }}>서비스 이용약관</h3>
+                    <p className="text-muted-foreground mb-[12px]">
+                      본 약관은 Splee(이하 "서비스")의 이용조건 및 절차, 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>제1조 (목적)</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      이 약관은 서비스가 제공하는 모든 서비스의 이용조건 및 절차에 관한 사항을 규정합니다.
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>제2조 (용어의 정의)</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      "서비스"란 회사가 제공하는 일정 관리 및 학습 계획 서비스를 의미합니다.
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>제3조 (약관의 효력)</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      본 약관은 서비스를 이용하고자 하는 모든 회원에게 적용됩니다.
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>제4조 (서비스의 제공)</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      회사는 연중무휴 24시간 서비스를 제공함을 원칙으로 합니다.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Privacy View */}
+              {settingsView === 'privacy' && (
+                <div className="p-[24px]">
+                  <div className="prose prose-sm" style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                    <h3 className="font-semibold mb-[16px]" style={{ fontSize: '16px' }}>개인정보처리방침</h3>
+                    <p className="text-muted-foreground mb-[12px]">
+                      Splee(이하 "서비스")는 이용자의 개인정보를 중요시하며, 개인정보 보호법을 준수하고 있습니다.
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>1. 수집하는 개인정보 항목</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      - 필수항목: 이메일 주소, 비밀번호, 닉네임<br />
+                      - 선택항목: 프로필 사진, 학교/학년 정보
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>2. 개인정보의 수집 및 이용목적</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      - 회원 관리 및 서비스 제공<br />
+                      - 서비스 개선 및 신규 서비스 개발<br />
+                      - 고객 문의 응대
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>3. 개인정보의 보유 및 이용기간</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      회원 탈퇴 시 즉시 파기하며, 관계법령에 따라 보존이 필요한 경우 해당 기간 동안 보관합니다.
+                    </p>
+                    <h4 className="font-medium mt-[20px] mb-[8px]" style={{ fontSize: '15px' }}>4. 개인정보의 제3자 제공</h4>
+                    <p className="text-muted-foreground mb-[12px]">
+                      원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Version View */}
+              {settingsView === 'version' && (
+                <div className="p-[24px]">
+                  <div className="flex flex-col items-center py-[32px]">
+                    <div className="w-[80px] h-[80px] bg-primary rounded-[20px] flex items-center justify-center mb-[20px]">
+                      <span className="text-primary-foreground font-bold" style={{ fontSize: '32px' }}>S</span>
+                    </div>
+                    <h3 className="font-semibold mb-[8px]" style={{ fontSize: '20px' }}>Splee</h3>
+                    <p className="text-muted-foreground mb-[24px]" style={{ fontSize: '14px' }}>버전 1.0.0</p>
+                    <div className="w-full border-t border-border pt-[24px]">
+                      <div className="flex justify-between py-[12px]">
+                        <span className="text-muted-foreground" style={{ fontSize: '14px' }}>빌드 번호</span>
+                        <span style={{ fontSize: '14px' }}>2024.01.23.001</span>
+                      </div>
+                      <div className="flex justify-between py-[12px]">
+                        <span className="text-muted-foreground" style={{ fontSize: '14px' }}>최종 업데이트</span>
+                        <span style={{ fontSize: '14px' }}>2024년 1월 23일</span>
+                      </div>
+                      <div className="flex justify-between py-[12px]">
+                        <span className="text-muted-foreground" style={{ fontSize: '14px' }}>개발사</span>
+                        <span style={{ fontSize: '14px' }}>Splee Inc.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Contact View */}
+              {settingsView === 'contact' && (
+                <div className="p-[24px]">
+                  <p className="text-muted-foreground mb-[24px]" style={{ fontSize: '14px' }}>
+                    서비스 이용 중 불편한 점이나 문의사항이 있으시면 아래 방법으로 연락해 주세요.
+                  </p>
+                  <div className="space-y-[16px]">
+                    <a
+                      href="mailto:support@splee.app"
+                      className="flex items-center gap-[16px] p-[16px] rounded-[12px] border border-border hover:bg-accent transition-colors"
+                    >
+                      <div className="w-[44px] h-[44px] bg-primary/10 rounded-[12px] flex items-center justify-center">
+                        <Mail className="w-[20px] h-[20px] text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium" style={{ fontSize: '15px' }}>이메일 문의</p>
+                        <p className="text-muted-foreground" style={{ fontSize: '13px' }}>support@splee.app</p>
+                      </div>
+                      <ExternalLink className="w-[16px] h-[16px] text-muted-foreground" />
+                    </a>
+                    <a
+                      href="https://splee.app/faq"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-[16px] p-[16px] rounded-[12px] border border-border hover:bg-accent transition-colors"
+                    >
+                      <div className="w-[44px] h-[44px] bg-primary/10 rounded-[12px] flex items-center justify-center">
+                        <Info className="w-[20px] h-[20px] text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium" style={{ fontSize: '15px' }}>자주 묻는 질문</p>
+                        <p className="text-muted-foreground" style={{ fontSize: '13px' }}>FAQ 페이지 바로가기</p>
+                      </div>
+                      <ExternalLink className="w-[16px] h-[16px] text-muted-foreground" />
+                    </a>
+                    <a
+                      href="https://instagram.com/splee.app"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-[16px] p-[16px] rounded-[12px] border border-border hover:bg-accent transition-colors"
+                    >
+                      <div className="w-[44px] h-[44px] bg-primary/10 rounded-[12px] flex items-center justify-center">
+                        <MessageCircle className="w-[20px] h-[20px] text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium" style={{ fontSize: '15px' }}>인스타그램</p>
+                        <p className="text-muted-foreground" style={{ fontSize: '13px' }}>@splee.app</p>
+                      </div>
+                      <ExternalLink className="w-[16px] h-[16px] text-muted-foreground" />
+                    </a>
+                  </div>
+                  <p className="text-muted-foreground mt-[24px] text-center" style={{ fontSize: '12px' }}>
+                    운영시간: 평일 09:00 - 18:00 (주말/공휴일 제외)
+                  </p>
+                </div>
+              )}
+
+              {/* Gift Code View */}
+              {settingsView === 'giftcode' && (
+                <div className="p-[24px]">
+                  <p className="text-muted-foreground mb-[24px]" style={{ fontSize: '14px' }}>
+                    선물 받은 티켓 코드를 입력하여 프리미엄 기능을 이용해 보세요.
+                  </p>
+                  <div className="space-y-[16px]">
+                    <div>
+                      <label className="block mb-[8px] font-medium" style={{ fontSize: '14px' }}>
+                        티켓 코드
+                      </label>
+                      <input
+                        type="text"
+                        value={giftCode}
+                        onChange={(e) => setGiftCode(e.target.value.toUpperCase())}
+                        placeholder="XXXX-XXXX-XXXX"
+                        className="w-full h-[48px] px-[16px] rounded-[12px] border border-border bg-input-background font-mono tracking-wider text-center"
+                        style={{ fontSize: '18px' }}
+                        maxLength={14}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (giftCode.length > 0) {
+                          alert('코드가 등록되었습니다!');
+                          setGiftCode('');
+                        }
+                      }}
+                      disabled={giftCode.length === 0}
+                      className="w-full h-[48px] rounded-[12px] bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ fontSize: '16px' }}
+                    >
+                      코드 등록
+                    </button>
+                  </div>
+                  <div className="mt-[32px] p-[16px] rounded-[12px] bg-muted">
+                    <h4 className="font-medium mb-[8px]" style={{ fontSize: '14px' }}>코드 입력 안내</h4>
+                    <ul className="text-muted-foreground space-y-[4px]" style={{ fontSize: '13px' }}>
+                      <li>• 코드는 대소문자를 구분하지 않습니다</li>
+                      <li>• 하이픈(-)은 자동으로 입력됩니다</li>
+                      <li>• 유효하지 않은 코드는 등록되지 않습니다</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>

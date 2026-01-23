@@ -1,4 +1,4 @@
-import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { SheetContextMenu } from './SheetContextMenu';
 
@@ -46,6 +46,7 @@ export function Navigation({
     x: number;
     y: number;
   } | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -231,14 +232,90 @@ export function Navigation({
       >
         {/* Profile & Toggle */}
         <div className="p-[16px] flex items-center justify-between">
-          {/* Profile Image */}
-          <div 
-            className="rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium cursor-pointer"
-            style={{ width: '44px', height: '44px', fontSize: '16px' }}
-          >
-            U
+          {/* Profile Image with Dropdown */}
+          <div className="relative">
+            <div
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium cursor-pointer hover:bg-primary/90 transition-colors"
+              style={{ width: '44px', height: '44px', fontSize: '16px' }}
+            >
+              U
+            </div>
+
+            {/* Profile Dropdown Menu */}
+            {showProfileMenu && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-[100]"
+                  onClick={() => setShowProfileMenu(false)}
+                />
+                {/* Menu */}
+                <div
+                  className="absolute left-0 top-[52px] bg-background border border-border rounded-[12px] shadow-xl z-[101] overflow-hidden"
+                  style={{ width: '180px' }}
+                >
+                  <div className="py-[4px]">
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: 프로필 페이지 열기
+                      }}
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                    >
+                      <User className="w-[16px] h-[16px] text-muted-foreground" />
+                      <span style={{ fontSize: '14px' }}>프로필</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: 설정 페이지 열기
+                      }}
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                    >
+                      <Settings className="w-[16px] h-[16px] text-muted-foreground" />
+                      <span style={{ fontSize: '14px' }}>설정</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: 테마 설정 열기
+                      }}
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                    >
+                      <Palette className="w-[16px] h-[16px] text-muted-foreground" />
+                      <span style={{ fontSize: '14px' }}>테마</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: 플랜 페이지 열기
+                      }}
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                    >
+                      <CreditCard className="w-[16px] h-[16px] text-muted-foreground" />
+                      <span style={{ fontSize: '14px' }}>플랜</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        // TODO: 휴지통 페이지 열기
+                      }}
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                    >
+                      <Trash2 className="w-[16px] h-[16px] text-muted-foreground" />
+                      <span style={{ fontSize: '14px' }}>휴지통</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          
+
           {/* Toggle Button */}
           <button
             onClick={onToggle}

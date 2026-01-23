@@ -417,7 +417,7 @@ export default function App() {
             </div>
 
             {/* Add Sheet Page - Fullscreen Modal */}
-            <AddAppSheetPage 
+            <AddAppSheetPage
               onClose={handleCloseAddSheet}
               onSelectTemplate={handleSelectTemplate}
               isOpen={showAddSheet}

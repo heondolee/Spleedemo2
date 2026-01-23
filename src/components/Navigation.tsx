@@ -1,4 +1,4 @@
-import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, BookOpen, PanelLeft, Settings, Palette, CreditCard, Trash2, User, Globe, FileText, Shield, Info, MessageCircle, Gift, X } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { SheetContextMenu } from './SheetContextMenu';
 
@@ -26,6 +26,15 @@ interface NavigationProps {
   onEditSheet: (sheetName: string) => void;
 }
 
+const settingsItems = [
+  { id: 'language', icon: Globe, label: '언어', value: '한국어', hasArrow: true },
+  { id: 'terms', icon: FileText, label: '이용약관', hasArrow: true },
+  { id: 'privacy', icon: Shield, label: '개인정보처리방침', hasArrow: true },
+  { id: 'version', icon: Info, label: '버전정보', value: 'v1.0.0', hasArrow: false },
+  { id: 'contact', icon: MessageCircle, label: '문의하기', hasArrow: true },
+  { id: 'giftcode', icon: Gift, label: '선물티켓코드', hasArrow: true },
+];
+
 export function Navigation({
   isExpanded,
   onToggle,
@@ -47,6 +56,7 @@ export function Navigation({
     y: number;
   } | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -270,7 +280,7 @@ export function Navigation({
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: 설정 페이지 열기
+                        setShowSettings(true);
                       }}
                       className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
                     >
@@ -461,6 +471,67 @@ export function Navigation({
             setContextMenu(null);
           }}
         />
+      )}
+
+      {/* Settings Dialog */}
+      {showSettings && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-[100]"
+            onClick={() => setShowSettings(false)}
+          />
+          {/* Dialog */}
+          <div
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background rounded-[16px] border border-border shadow-xl z-[101] overflow-hidden"
+            style={{ width: '400px' }}
+          >
+            {/* Header */}
+            <div className="px-[24px] py-[20px] border-b border-border flex items-center justify-between">
+              <h2 className="font-semibold" style={{ fontSize: '18px' }}>설정</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+              >
+                <X className="w-[18px] h-[18px]" />
+              </button>
+            </div>
+
+            {/* Settings Items */}
+            <div className="py-[8px]">
+              {settingsItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      console.log('Settings item clicked:', item.id);
+                    }}
+                    className="w-full flex items-center justify-between px-[24px] py-[16px] hover:bg-accent transition-colors"
+                    style={{ minHeight: '56px' }}
+                  >
+                    <div className="flex items-center gap-[16px]">
+                      <Icon className="w-[20px] h-[20px] text-muted-foreground" />
+                      <span className="font-medium" style={{ fontSize: '16px' }}>
+                        {item.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-[8px]">
+                      {item.value && (
+                        <span className="text-muted-foreground" style={{ fontSize: '14px' }}>
+                          {item.value}
+                        </span>
+                      )}
+                      {item.hasArrow && (
+                        <ChevronRight className="w-[16px] h-[16px] text-muted-foreground" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
     </>
   );

@@ -478,19 +478,18 @@ export function Navigation({
 
       {/* Settings Dialog */}
       {showSettings && (
-        <>
-          {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/60 z-[100] flex items-center justify-center backdrop-blur-sm"
+          onClick={() => {
+            setShowSettings(false);
+            setSettingsView(null);
+          }}
+        >
+          {/* Dialog - 아이패드 화면 정중앙 고정 크기 */}
           <div
-            className="fixed inset-0 bg-black/50 z-[100]"
-            onClick={() => {
-              setShowSettings(false);
-              setSettingsView(null);
-            }}
-          />
-          {/* Dialog */}
-          <div
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background rounded-[16px] border border-border shadow-xl z-[101] overflow-hidden"
-            style={{ width: '480px', maxHeight: '600px' }}
+            className="bg-background rounded-[16px] border border-border shadow-xl overflow-hidden flex flex-col"
+            style={{ width: '480px', height: '560px' }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div className="px-[24px] py-[20px] border-b border-border flex items-center justify-between">
@@ -525,7 +524,7 @@ export function Navigation({
             </div>
 
             {/* Content */}
-            <div className="overflow-y-auto" style={{ maxHeight: '520px' }}>
+            <div className="flex-1 overflow-y-auto">
               {/* Main Settings List */}
               {!settingsView && (
                 <div className="py-[8px]">
@@ -779,7 +778,7 @@ export function Navigation({
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </>
   );

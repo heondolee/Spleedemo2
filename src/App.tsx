@@ -1,58 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Navigation } from './components/Navigation';
+import { SheetView } from './components/SheetView';
 import { AddAppSheetPage } from './components/AddAppSheetPage';
-import { DailyPlannerSheet } from './components/daily-planner';
-
-// localStorage 키 상수
-const STORAGE_KEYS = {
-  NAV_EXPANDED: 'splee_navExpanded',
-  FOCUSED_SHEET: 'splee_focusedSheet',
-  SELECTED_SHEETS: 'splee_selectedSheets',
-  APP_SHEETS: 'splee_appSheets',
-  SAVED_TEMPLATES: 'splee_savedTemplates',
-  THEME: 'splee_theme',
-} as const;
-
-// localStorage 헬퍼 함수
-function getFromStorage<T>(key: string, defaultValue: T): T {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch {
-    return defaultValue;
-  }
-}
-
-function saveToStorage<T>(key: string, value: T): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.error('localStorage 저장 실패:', error);
-  }
-}
 
 export default function App() {
-  // localStorage에서 초기값 로드
-  const [isNavExpanded, setIsNavExpanded] = useState(() =>
-    getFromStorage(STORAGE_KEYS.NAV_EXPANDED, true)
-  );
-  const [focusedSheet, setFocusedSheet] = useState<'left' | 'right'>(() =>
-    getFromStorage(STORAGE_KEYS.FOCUSED_SHEET, 'right')
-  );
-  const [showAddSheet, setShowAddSheet] = useState(false); // 이건 저장하지 않음 (임시 UI 상태)
-  const [editingSheet, setEditingSheet] = useState<string | null>(null); // 현재 편집 중인 앱시트 이름
-  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
-    getFromStorage(STORAGE_KEYS.THEME, 'light')
-  );
+  const [isNavExpanded, setIsNavExpanded] = useState(true);
+  const [focusedSheet, setFocusedSheet] = useState<'left' | 'right'>('right'); // 디폴트: 오른쪽
+  const [showAddSheet, setShowAddSheet] = useState(false); // 앱시트 추가 페이지 표시 여부
   const [selectedSheets, setSelectedSheets] = useState<{
     left: string | null;
     right: string | null;
-  }>(() => getFromStorage(STORAGE_KEYS.SELECTED_SHEETS, { left: null, right: null }));
+  }>({
+    left: null,
+    right: null // 디폴트도 null로 변경
+  });
 
-  // 앱시트 목록
-  const [appSheets, setAppSheets] = useState<Array<{ id: string; name: string; isNew: boolean }>>(() =>
-    getFromStorage(STORAGE_KEYS.APP_SHEETS, [])
-  );
+  // 앱시트 목록 (빈 배열로 시작)
+  const [appSheets, setAppSheets] = useState<Array<{ id: string; name: string; isNew: boolean }>>([]);
 
   // 저장된 템플릿 (카테고리별)
   const [savedTemplates, setSavedTemplates] = useState<{
@@ -63,38 +27,11 @@ export default function App() {
       color: string;
       category: string;
     }>;
-  }>(() => getFromStorage(STORAGE_KEYS.SAVED_TEMPLATES, { daily: [], exam: [], calendar: [] }));
-
-  // 상태 변경 시 localStorage에 저장
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.NAV_EXPANDED, isNavExpanded);
-  }, [isNavExpanded]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.FOCUSED_SHEET, focusedSheet);
-  }, [focusedSheet]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.SELECTED_SHEETS, selectedSheets);
-  }, [selectedSheets]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.APP_SHEETS, appSheets);
-  }, [appSheets]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.SAVED_TEMPLATES, savedTemplates);
-  }, [savedTemplates]);
-
-  useEffect(() => {
-    saveToStorage(STORAGE_KEYS.THEME, theme);
-    // html 요소에 dark 클래스 추가/제거
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
+  }>({
+    daily: [],
+    exam: [],
+    calendar: [],
+  });
 
   const handleSheetSelect = (sheetName: string, position: 'left' | 'right') => {
     setSelectedSheets(prev => ({
@@ -145,11 +82,14 @@ export default function App() {
       
       // 선택한 템플릿을 자동으로 "내 템플릿"에 저장
       const categories = {
-        daily: ['하루 계획'],
-        exam: ['시험 관리'],
-        calendar: ['캘린더']
+        daily: ['기본 일일 플래너', '시간표형 플래너', '목표 중심 플래너', '루틴 트래커', '집중 모드', 
+                '스터디 루틴', '수능 D-100', '완벽한 하루', '미라클 모닝', '밸런스 라이프'],
+        exam: ['기본 시험 관리', '과목별 준비도', '오답노트 연계', '모의고사 분석', 'D-Day 카운터',
+               '중간고사 대비', '수능 전략', '내신 관리', '약점 공략', '기출 분석'],
+        calendar: ['기본 월간 캘린더', '학사 일정', 'D-Day 캘린더', '주간 뷰', '연간 플래너',
+                   '학기 플래너', '방학 계획표', '100일 챌린지', '시험 일정표', '목표 달성기']
       };
-
+      
       // 카테고리 찾기
       let categoryId = '';
       for (const [catId, templates] of Object.entries(categories)) {
@@ -158,20 +98,81 @@ export default function App() {
           break;
         }
       }
-
+      
       if (categoryId) {
+        // 템플릿 정보 찾기 (더미 데이터)
         const templateColors: { [key: string]: string } = {
-          '하루 계획': 'bg-blue-500',
-          '시험 관리': 'bg-red-500',
-          '캘린더': 'bg-green-500',
+          // daily
+          '기본 일일 플래너': 'bg-blue-500',
+          '시간표형 플래너': 'bg-indigo-500',
+          '목표 중심 플래너': 'bg-purple-500',
+          '루틴 트래커': 'bg-violet-500',
+          '집중 모드': 'bg-blue-600',
+          '스터디 루틴': 'bg-cyan-500',
+          '수능 D-100': 'bg-teal-500',
+          '완벽한 하루': 'bg-sky-500',
+          '미라클 모닝': 'bg-blue-400',
+          '밸런스 라이프': 'bg-indigo-400',
+          // exam
+          '기본 시험 관리': 'bg-red-500',
+          '과목별 준비도': 'bg-orange-500',
+          '오답노트 연계': 'bg-amber-500',
+          '모의고사 분석': 'bg-yellow-500',
+          'D-Day 카운터': 'bg-red-600',
+          '중간고사 대비': 'bg-rose-500',
+          '수능 전략': 'bg-pink-500',
+          '내신 관리': 'bg-fuchsia-500',
+          '약점 공략': 'bg-rose-600',
+          '기출 분석': 'bg-red-400',
+          // calendar
+          '기본 월간 캘린더': 'bg-green-500',
+          '학사 일정': 'bg-emerald-500',
+          'D-Day 캘린더': 'bg-lime-500',
+          '주간 뷰': 'bg-green-600',
+          '연간 플래너': 'bg-teal-600',
+          '학기 플래너': 'bg-teal-500',
+          '방학 계획표': 'bg-cyan-500',
+          '100일 챌린지': 'bg-sky-500',
+          '시험 일정표': 'bg-emerald-600',
+          '목표 달성기': 'bg-green-400',
         };
-
+        
         const templateDescriptions: { [key: string]: string } = {
-          '하루 계획': '하루 일정과 목표를 관리합니다',
-          '시험 관리': '시험 일정과 준비 현황을 관리합니다',
-          '캘린더': '일정을 캘린더로 관리합니다',
+          // daily
+          '기본 일일 플래너': '간단한 하루 일정 관리',
+          '시간표형 플래너': '시간대별 상세 계획',
+          '목표 중심 플래너': '일일 목표 달성 추적',
+          '루틴 트래커': '습관 형성 및 루틴 관리',
+          '집중 모드': '포모도로 기반 플래너',
+          '스터디 루틴': '완벽한 학습 루틴 관리',
+          '수능 D-100': '수능 카운트다운과 일일 계획',
+          '완벽한 하루': '생산성 극대화 플래너',
+          '미라클 모닝': '새벽 루틴 최적화',
+          '밸런스 라이프': '공부와 휴식의 균형',
+          // exam
+          '기본 시험 관리': '시험 일정과 준비 현황',
+          '과목별 준비도': '과목별 학습 진도 추적',
+          '오답노트 연계': '시험과 오답 통합 관리',
+          '모의고사 분석': '성적 추이 및 분석',
+          'D-Day 카운터': '시험일 카운트다운',
+          '중간고사 대비': '중간고사 완벽 준비',
+          '수능 전략': '수능 시험 전략 관리',
+          '내신 관리': '내신 성적 관리',
+          '약점 공략': '취약 과목 집중 관리',
+          '기출 분석': '기출문제 패턴 분석',
+          // calendar
+          '기본 월간 캘린더': '월 단위 일정 관리',
+          '학사 일정': '학교 일정 중심 캘린더',
+          'D-Day 캘린더': '중요 날짜 카운트다운',
+          '주간 뷰': '주 단위 상세 일정',
+          '연간 플래너': '1년 전체 계획 관리',
+          '학기 플래너': '학기별 일정 관리',
+          '방학 계획표': '방학 계획 수립',
+          '100일 챌린지': '100일 목표 달성',
+          '시험 일정표': '시험 중심 캘린더',
+          '목표 달성기': '월별 목표 추적',
         };
-
+        
         handleSaveTemplate(categoryId, templateName, {
           description: templateDescriptions[templateName] || '',
           color: templateColors[templateName] || 'bg-gray-500',
@@ -243,9 +244,12 @@ export default function App() {
   const handleApplyTemplate = (categoryId: string, templateName: string) => {
     // 해당 카테고리의 기존 앱시트를 찾아서 템플릿 변경
     const categories = {
-      daily: ['하루 계획'],
-      exam: ['시험 관리'],
-      calendar: ['캘린더']
+      daily: ['기본 일일 플래너', '시간표형 플래너', '목표 중심 플래너', '루틴 트래커', '집중 모드', 
+              '스터디 루틴', '수능 D-100', '완벽한 하루', '미라클 모닝', '밸런스 라이프'],
+      exam: ['기본 시험 관리', '과목별 준비도', '오답노트 연계', '모의고사 분석', 'D-Day 카운터',
+             '중간고사 대비', '수능 전략', '내신 관리', '약점 공략', '기출 분석'],
+      calendar: ['기본 월간 캘린더', '학사 일정', 'D-Day 캘린더', '주간 뷰', '연간 플래너',
+                 '학기 플래너', '방학 계획표', '100일 챌린지', '시험 일정표', '목표 달성기']
     };
 
     // 해당 카테고리에 속한 기존 앱시트 찾기
@@ -271,61 +275,19 @@ export default function App() {
     setShowAddSheet(false);
   };
 
-  const handleEditSheet = (sheetName: string) => {
-    // 1. 네비게이션 닫기
-    setIsNavExpanded(false);
-
-    // 2. 해당 시트가 오른쪽에 있으면 왼쪽으로 이동
-    if (selectedSheets.right === sheetName && selectedSheets.left !== sheetName) {
-      setSelectedSheets(prev => ({
-        left: sheetName,
-        right: null
-      }));
-    } else if (selectedSheets.left !== sheetName) {
-      // 어디에도 없으면 왼쪽에 배치
-      setSelectedSheets(prev => ({
-        left: sheetName,
-        right: null
-      }));
-    } else {
-      // 이미 왼쪽에 있으면 오른쪽만 비우기
-      setSelectedSheets(prev => ({
-        ...prev,
-        right: null
-      }));
-    }
-
-    // 3. 편집 모드 활성화
-    setEditingSheet(sheetName);
-  };
-
-  const handleCloseEditor = () => {
-    setEditingSheet(null);
-  };
-
-  const handleClearLocalStorage = () => {
-    // 모든 splee 관련 localStorage 삭제
-    Object.values(STORAGE_KEYS).forEach(key => {
-      localStorage.removeItem(key);
-    });
-    // 페이지 새로고침하여 초기 상태로 복원
-    window.location.reload();
-  };
-
   return (
-    <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-8 gap-[16px]">
-      {/* iPad Pro 11" Frame - Landscape - 내부 화면 1194 × 834 px */}
-      <div
-        className="bg-black rounded-[40px] shadow-2xl relative overflow-hidden"
-        style={{
-          width: '1234px',
-          height: '874px',
-          padding: '20px'
+    <div className="min-h-screen bg-slate-200 flex items-center justify-center p-8">
+      {/* iPad Pro 11" Frame - Landscape - 1194 × 834 px (베젤 제외) */}
+      <div 
+        className="bg-black shadow-2xl relative overflow-hidden"
+        style={{ 
+          width: '1194px', 
+          height: '834px',
         }}
       >
-        {/* Screen Area - 1194 × 834 px */}
-        <div
-          className="bg-background rounded-[24px] w-full h-full overflow-hidden relative"
+        {/* Screen Area */}
+        <div 
+          className="bg-background w-full h-full overflow-hidden relative"
           style={{
             width: '1194px',
             height: '834px'
@@ -334,7 +296,7 @@ export default function App() {
           {/* App Content */}
           <div className="w-full h-full relative">
             {/* Navigation Bar - Overlay */}
-            <Navigation
+            <Navigation 
               isExpanded={isNavExpanded}
               onToggle={handleNavToggle}
               appSheets={appSheets}
@@ -346,35 +308,19 @@ export default function App() {
               onDeleteSheet={handleDeleteSheet}
               onRenameSheet={handleRenameSheet}
               onReorderSheets={handleReorderSheets}
-              onEditSheet={handleEditSheet}
-              theme={theme}
-              onThemeChange={setTheme}
             />
 
             {/* Main Content Area - Fixed Size */}
             <div className="w-full h-full flex">
               {/* Left Sheet */}
-              <div
+              <SheetView
+                sheetName={selectedSheets.left}
+                position="left"
+                isVisible={true}
+                isNavExpanded={isNavExpanded}
+                isFocused={focusedSheet === 'left'}
                 onClick={() => handleSheetClick('left')}
-                className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
-                  isNavExpanded && focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
-                }`}
-                style={{ width: '597px' }}
-              >
-                {selectedSheets.left && isNavExpanded && (
-                  <div className="absolute top-[16px] right-[16px] z-40">
-                    <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                      <span className="font-medium" style={{ fontSize: '14px' }}>
-                        {selectedSheets.left}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {/* Sheet Content */}
-                {selectedSheets.left === '하루 계획' && (
-                  <DailyPlannerSheet />
-                )}
-              </div>
+              />
 
               {/* Divider (if both sheets selected) */}
               {selectedSheets.left && selectedSheets.right && (
@@ -382,58 +328,18 @@ export default function App() {
               )}
 
               {/* Right Sheet */}
-              <div
+              <SheetView
+                sheetName={selectedSheets.right}
+                position="right"
+                isVisible={true}
+                isNavExpanded={isNavExpanded}
+                isFocused={focusedSheet === 'right'}
                 onClick={() => handleSheetClick('right')}
-                className={`h-full bg-card transition-all duration-200 relative ${
-                  isNavExpanded && focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
-                }`}
-                style={{ width: '597px' }}
-              >
-                {/* 편집 모드일 때 편집기 표시 */}
-                {editingSheet ? (
-                  <div className="w-full h-full flex flex-col">
-                    {/* 편집기 헤더 */}
-                    <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-border">
-                      <h2 className="font-medium" style={{ fontSize: '18px' }}>
-                        {editingSheet} 수정
-                      </h2>
-                      <button
-                        onClick={handleCloseEditor}
-                        className="px-[16px] py-[8px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                        style={{ fontSize: '14px' }}
-                      >
-                        완료
-                      </button>
-                    </div>
-                    {/* 편집기 내용 - 빈 화면 */}
-                    <div className="flex-1 flex items-center justify-center">
-                      <p className="text-muted-foreground" style={{ fontSize: '16px' }}>
-                        앱시트 편집 화면
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {selectedSheets.right && isNavExpanded && (
-                      <div className="absolute top-[16px] left-[16px] z-40">
-                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                          <span className="font-medium" style={{ fontSize: '14px' }}>
-                            {selectedSheets.right}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    {/* Sheet Content */}
-                    {selectedSheets.right === '하루 계획' && (
-                      <DailyPlannerSheet />
-                    )}
-                  </>
-                )}
-              </div>
+              />
             </div>
 
             {/* Add Sheet Page - Fullscreen Modal */}
-            <AddAppSheetPage
+            <AddAppSheetPage 
               onClose={handleCloseAddSheet}
               onSelectTemplate={handleSelectTemplate}
               isOpen={showAddSheet}
@@ -445,22 +351,7 @@ export default function App() {
             />
           </div>
         </div>
-
-        {/* Home Indicator */}
-        <div
-          className="absolute bottom-[8px] left-1/2 transform -translate-x-1/2 bg-white/30 rounded-full"
-          style={{ width: '140px', height: '4px' }}
-        ></div>
       </div>
-
-      {/* localStorage 초기화 버튼 - iPad 프레임 아래 */}
-      <button
-        onClick={handleClearLocalStorage}
-        className="px-[16px] py-[8px] rounded-[8px] bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 transition-colors shadow-sm"
-        style={{ fontSize: '14px' }}
-      >
-        localStorage 초기화
-      </button>
     </div>
   );
 }

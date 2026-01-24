@@ -1,4 +1,4 @@
-import { Edit2, Trash2, Type } from 'lucide-react';
+import { Edit2, Trash2, Type, Layout } from 'lucide-react';
 
 interface SheetContextMenuProps {
   sheetId: string;
@@ -7,6 +7,7 @@ interface SheetContextMenuProps {
   onClose: () => void;
   onRename: () => void;
   onDelete: () => void;
+  onEditLayout: () => void;
 }
 
 export function SheetContextMenu({
@@ -16,6 +17,7 @@ export function SheetContextMenu({
   onClose,
   onRename,
   onDelete,
+  onEditLayout,
 }: SheetContextMenuProps) {
   return (
     <>
@@ -55,6 +57,17 @@ export function SheetContextMenu({
           >
             <Trash2 className="w-[16px] h-[16px]" />
             <span style={{ fontSize: '14px' }}>삭제</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              onEditLayout();
+              onClose();
+            }}
+            className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+          >
+            <Layout className="w-[16px] h-[16px] text-muted-foreground" />
+            <span style={{ fontSize: '14px' }}>레이아웃 편집</span>
           </button>
         </div>
       </div>

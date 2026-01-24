@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Navigation } from './components/Navigation';
 import { SheetView } from './components/SheetView';
 import { AddAppSheetPage } from './components/AddAppSheetPage';
+import { SheetLayoutEditor } from './components/SheetLayoutEditor';
+import { ProfileView } from './components/ProfileView';
 
 export default function App() {
   const [isNavExpanded, setIsNavExpanded] = useState(true);
   const [focusedSheet, setFocusedSheet] = useState<'left' | 'right'>('right'); // 디폴트: 오른쪽
   const [showAddSheet, setShowAddSheet] = useState(false); // 앱시트 추가 페이지 표시 여부
+  const [editingLayout, setEditingLayout] = useState<{ sheetId: string; sheetName: string } | null>(null); // 레이아웃 편집 상태
+  const [showProfile, setShowProfile] = useState(false); // 프로필 뷰 표시 여부
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date>(new Date(2026, 0, 24)); // 캘린더에서 선택한 날짜
   const [selectedSheets, setSelectedSheets] = useState<{
     left: string | null;
     right: string | null;
@@ -275,6 +280,29 @@ export default function App() {
     setShowAddSheet(false);
   };
 
+  const handleCalendarDateClick = (date: Date, currentPosition: 'left' | 'right') => {
+    setCalendarSelectedDate(date);
+    
+    // 반대편 화면 위치 결정
+    const oppositePosition = currentPosition === 'left' ? 'right' : 'left';
+    
+    // 반대편에 하루계획 앱시트가 없으면 추가
+    const dailyPlanExists = appSheets.some(sheet => sheet.name === '하루계획');
+    if (!dailyPlanExists) {
+      const newSheet = { id: Date.now().toString(), name: '하루계획', isNew: false };
+      setAppSheets(prev => [...prev, newSheet]);
+    }
+    
+    // 반대편 화면에 하루계획 앱시트 표시
+    setSelectedSheets(prev => ({
+      ...prev,
+      [oppositePosition]: '하루계획'
+    }));
+    
+    // 포커스를 반대편으로 이동
+    setFocusedSheet(oppositePosition);
+  };
+
   return (
     <div className="min-h-screen bg-slate-200 flex items-center justify-center p-8">
       {/* iPad Pro 11" Frame - Landscape - 1194 × 834 px (베젤 제외) */}
@@ -308,6 +336,8 @@ export default function App() {
               onDeleteSheet={handleDeleteSheet}
               onRenameSheet={handleRenameSheet}
               onReorderSheets={handleReorderSheets}
+              onEditLayout={(sheetId, sheetName) => setEditingLayout({ sheetId, sheetName })}
+              onOpenProfile={() => setShowProfile(true)}
             />
 
             {/* Main Content Area - Fixed Size */}
@@ -320,6 +350,8 @@ export default function App() {
                 isNavExpanded={isNavExpanded}
                 isFocused={focusedSheet === 'left'}
                 onClick={() => handleSheetClick('left')}
+                onCalendarDateSelect={(date) => handleCalendarDateClick(date, 'left')}
+                selectedDate={calendarSelectedDate}
               />
 
               {/* Divider (if both sheets selected) */}
@@ -335,6 +367,8 @@ export default function App() {
                 isNavExpanded={isNavExpanded}
                 isFocused={focusedSheet === 'right'}
                 onClick={() => handleSheetClick('right')}
+                onCalendarDateSelect={(date) => handleCalendarDateClick(date, 'right')}
+                selectedDate={calendarSelectedDate}
               />
             </div>
 
@@ -348,6 +382,20 @@ export default function App() {
               onSaveTemplate={handleSaveTemplate}
               onDeleteTemplate={handleDeleteTemplate}
               onApplyTemplate={handleApplyTemplate}
+            />
+
+            {/* Sheet Layout Editor - Fullscreen Modal */}
+            <SheetLayoutEditor
+              onClose={() => setEditingLayout(null)}
+              isOpen={editingLayout !== null}
+              sheetId={editingLayout?.sheetId || ''}
+              sheetName={editingLayout?.sheetName || ''}
+            />
+
+            {/* Profile View - Fullscreen Modal */}
+            <ProfileView
+              onClose={() => setShowProfile(false)}
+              isOpen={showProfile}
             />
           </div>
         </div>

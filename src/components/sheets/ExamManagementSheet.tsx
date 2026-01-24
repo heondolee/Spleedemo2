@@ -17,6 +17,8 @@ interface Subject {
   memo: string;
   progress: number;
   expanded: boolean;
+  strategyExpanded: boolean;
+  memoExpanded: boolean;
 }
 
 interface Exam {
@@ -58,6 +60,8 @@ export function ExamManagementSheet() {
           memo: '',
           progress: 50,
           expanded: false,
+          strategyExpanded: false,
+          memoExpanded: false,
         },
         {
           id: 's2',
@@ -75,6 +79,8 @@ export function ExamManagementSheet() {
           memo: '',
           progress: 0,
           expanded: false,
+          strategyExpanded: false,
+          memoExpanded: false,
         },
         {
           id: 's3',
@@ -84,6 +90,8 @@ export function ExamManagementSheet() {
           memo: '',
           progress: 0,
           expanded: false,
+          strategyExpanded: false,
+          memoExpanded: false,
         },
       ],
     },
@@ -154,6 +162,8 @@ export function ExamManagementSheet() {
       memo: '',
       progress: 0,
       expanded: false,
+      strategyExpanded: false,
+      memoExpanded: false,
     };
     setExams(exams.map(exam => 
       exam.id === examId ? { ...exam, subjects: [...exam.subjects, newSubject] } : exam
@@ -202,6 +212,32 @@ export function ExamManagementSheet() {
             ...exam,
             subjects: exam.subjects.map(subject =>
               subject.id === subjectId ? { ...subject, memo } : subject
+            )
+          }
+        : exam
+    ));
+  };
+
+  const toggleStrategyExpanded = (examId: string, subjectId: string) => {
+    setExams(exams.map(exam => 
+      exam.id === examId 
+        ? {
+            ...exam,
+            subjects: exam.subjects.map(subject =>
+              subject.id === subjectId ? { ...subject, strategyExpanded: !subject.strategyExpanded } : subject
+            )
+          }
+        : exam
+    ));
+  };
+
+  const toggleMemoExpanded = (examId: string, subjectId: string) => {
+    setExams(exams.map(exam => 
+      exam.id === examId 
+        ? {
+            ...exam,
+            subjects: exam.subjects.map(subject =>
+              subject.id === subjectId ? { ...subject, memoExpanded: !subject.memoExpanded } : subject
             )
           }
         : exam
@@ -735,9 +771,9 @@ export function ExamManagementSheet() {
 
                                 {/* Subject Content (Expanded) */}
                                 {subject.expanded && (
-                                  <div className="p-[12px] space-y-[12px]">
+                                  <div className="p-[12px]">
                                     {/* Progress Bar */}
-                                    <div>
+                                    <div className="mb-[12px]">
                                       <div className="flex items-center gap-[8px]">
                                         <div className="flex-1 h-[6px] bg-muted rounded-full overflow-hidden">
                                           <div
@@ -750,34 +786,88 @@ export function ExamManagementSheet() {
                                         </span>
                                       </div>
                                     </div>
-                                    
-                                    {/* Strategy */}
-                                    <div>
-                                      <label className="text-muted-foreground font-medium mb-[6px] block" style={{ fontSize: '12px' }}>
-                                        전략
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={subject.strategy}
-                                        onChange={(e) => updateSubjectStrategy(exam.id, subject.id, e.target.value)}
-                                        placeholder="학습 전략을 입력하세요"
-                                        className="w-full px-[12px] py-[8px] rounded-[8px] border border-border bg-background outline-none focus:border-primary transition-colors"
-                                        style={{ fontSize: '13px' }}
-                                      />
-                                    </div>
 
-                                    {/* Memo */}
-                                    <div>
-                                      <label className="text-muted-foreground font-medium mb-[6px] block" style={{ fontSize: '12px' }}>
-                                        메모 <span className="text-xs">(긴 글은 펜슬 지원)</span>
-                                      </label>
-                                      <textarea
-                                        value={subject.memo}
-                                        onChange={(e) => updateSubjectMemo(exam.id, subject.id, e.target.value)}
-                                        placeholder="메모를 입력하세요"
-                                        className="w-full px-[12px] py-[8px] rounded-[8px] border border-border bg-background outline-none focus:border-primary transition-colors resize-none"
-                                        style={{ fontSize: '13px', minHeight: '60px' }}
-                                      />
+                                    {/* Strategy and Memo Grid */}
+                                    <div className="grid grid-cols-2 gap-[8px] mb-[12px]">
+                                      {/* Strategy Card */}
+                                      <div 
+                                        className={`border border-border rounded-[8px] bg-background overflow-hidden ${
+                                          subject.strategyExpanded ? 'col-span-2' : ''
+                                        }`}
+                                      >
+                                        <button
+                                          onClick={() => toggleStrategyExpanded(exam.id, subject.id)}
+                                          className="w-full flex items-center justify-between px-[10px] py-[8px] bg-accent/20 hover:bg-accent/30 transition-colors"
+                                        >
+                                          <div className="flex items-center gap-[6px]">
+                                            {subject.strategyExpanded ? (
+                                              <ChevronDown className="w-[12px] h-[12px]" />
+                                            ) : (
+                                              <ChevronRight className="w-[12px] h-[12px]" />
+                                            )}
+                                            <span className="text-muted-foreground font-medium" style={{ fontSize: '12px' }}>
+                                              전략
+                                            </span>
+                                          </div>
+                                          {!subject.strategyExpanded && subject.strategy && (
+                                            <span className="text-muted-foreground truncate" style={{ fontSize: '11px', maxWidth: '100px' }}>
+                                              {subject.strategy}
+                                            </span>
+                                          )}
+                                        </button>
+                                        {subject.strategyExpanded && (
+                                          <div className="p-[10px]">
+                                            <input
+                                              type="text"
+                                              value={subject.strategy}
+                                              onChange={(e) => updateSubjectStrategy(exam.id, subject.id, e.target.value)}
+                                              placeholder="학습 전략을 입력하세요"
+                                              className="w-full px-[10px] py-[8px] rounded-[6px] border border-border bg-background outline-none focus:border-primary transition-colors"
+                                              style={{ fontSize: '13px' }}
+                                            />
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Memo Card */}
+                                      <div 
+                                        className={`border border-border rounded-[8px] bg-background overflow-hidden ${
+                                          subject.memoExpanded ? 'col-span-2' : ''
+                                        }`}
+                                      >
+                                        <button
+                                          onClick={() => toggleMemoExpanded(exam.id, subject.id)}
+                                          className="w-full flex items-center justify-between px-[10px] py-[8px] bg-accent/20 hover:bg-accent/30 transition-colors"
+                                        >
+                                          <div className="flex items-center gap-[6px]">
+                                            {subject.memoExpanded ? (
+                                              <ChevronDown className="w-[12px] h-[12px]" />
+                                            ) : (
+                                              <ChevronRight className="w-[12px] h-[12px]" />
+                                            )}
+                                            <span className="text-muted-foreground font-medium" style={{ fontSize: '12px' }}>
+                                              메모
+                                            </span>
+                                          </div>
+                                          {!subject.memoExpanded && subject.memo && (
+                                            <span className="text-muted-foreground truncate" style={{ fontSize: '11px', maxWidth: '100px' }}>
+                                              {subject.memo}
+                                            </span>
+                                          )}
+                                        </button>
+                                        {subject.memoExpanded && (
+                                          <div className="p-[10px]">
+                                            <textarea
+                                              value={subject.memo}
+                                              onChange={(e) => updateSubjectMemo(exam.id, subject.id, e.target.value)}
+                                              placeholder="메모를 입력하세요"
+                                              className="w-full px-[10px] py-[8px] rounded-[6px] border border-border bg-background outline-none focus:border-primary transition-colors resize-none"
+                                              style={{ fontSize: '13px', minHeight: '80px' }}
+                                            />
+                                            <span className="text-muted-foreground text-xs mt-[4px] inline-block">(긴 글은 펜슬 지원)</span>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
 
                                     {/* Ranges */}

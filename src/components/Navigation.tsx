@@ -23,6 +23,8 @@ interface NavigationProps {
   onDeleteSheet: (sheetId: string) => void;
   onRenameSheet: (sheetId: string, newName: string) => void;
   onReorderSheets: (newOrder: AppSheet[]) => void;
+  onEditLayout: (sheetId: string, sheetName: string) => void;
+  onOpenProfile: () => void;
 }
 
 export function Navigation({ 
@@ -36,7 +38,9 @@ export function Navigation({
   setShowAddSheet,
   onDeleteSheet,
   onRenameSheet,
-  onReorderSheets
+  onReorderSheets,
+  onEditLayout,
+  onOpenProfile
 }: NavigationProps) {
   const [contextMenu, setContextMenu] = useState<{
     sheetId: string;
@@ -233,6 +237,7 @@ export function Navigation({
           <div 
             className="rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium cursor-pointer"
             style={{ width: '44px', height: '44px', fontSize: '16px' }}
+            onClick={onOpenProfile}
           >
             U
           </div>
@@ -375,6 +380,10 @@ export function Navigation({
           }}
           onDelete={() => {
             onDeleteSheet(contextMenu.sheetId);
+            setContextMenu(null);
+          }}
+          onEditLayout={() => {
+            onEditLayout(contextMenu.sheetId, contextMenu.sheetName);
             setContextMenu(null);
           }}
         />

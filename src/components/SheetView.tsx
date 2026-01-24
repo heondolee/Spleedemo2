@@ -1,5 +1,7 @@
 import { DailyPlannerSheet } from './sheets/DailyPlannerSheet';
 import { ExamManagementSheet } from './sheets/ExamManagementSheet';
+import { CalendarSheet } from './sheets/CalendarSheet';
+import { DailyPlanSheet } from './sheets/DailyPlanSheet';
 
 interface SheetViewProps {
   sheetName: string | null;
@@ -8,9 +10,11 @@ interface SheetViewProps {
   isNavExpanded: boolean;
   isFocused: boolean;
   onClick: () => void;
+  onCalendarDateSelect?: (date: Date) => void;
+  selectedDate?: Date;
 }
 
-export function SheetView({ sheetName, position, isVisible, isNavExpanded, isFocused, onClick }: SheetViewProps) {
+export function SheetView({ sheetName, position, isVisible, isNavExpanded, isFocused, onClick, onCalendarDateSelect, selectedDate }: SheetViewProps) {
   if (!isVisible || !sheetName) {
     return <div className="flex-1"></div>;
   }
@@ -31,12 +35,31 @@ export function SheetView({ sheetName, position, isVisible, isNavExpanded, isFoc
       '수능 전략', '내신 관리', '약점 공략', '기출 분석'
     ];
 
+    // "캘린더" 카테고리의 모든 템플릿
+    const calendarTemplates = [
+      '기본 월간 캘린더', '학사 일정', 'D-Day 캘린더', '주간 뷰', '연간 플래너',
+      '학기 플래너', '방학 계획표', '100일 챌린지', '시험 일정표', '목표 달성기'
+    ];
+
     if (dailyTemplates.includes(sheetName)) {
       return <DailyPlannerSheet />;
     }
 
     if (examTemplates.includes(sheetName)) {
       return <ExamManagementSheet />;
+    }
+
+    if (calendarTemplates.includes(sheetName)) {
+      return (
+        <CalendarSheet 
+          onDateSelect={(date) => onCalendarDateSelect && onCalendarDateSelect(date)}
+          selectedDate={selectedDate}
+        />
+      );
+    }
+
+    if (sheetName === '하루계획') {
+      return <DailyPlanSheet selectedDate={selectedDate || new Date()} />;
     }
 
     // 기본 placeholder

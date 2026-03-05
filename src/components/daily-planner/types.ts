@@ -25,6 +25,18 @@ export interface TimelineBlock {
   cellSpan?: number; // 가로 셀 개수 (1-6, 기본값 3 = 30분)
 }
 
+export interface DragData {
+  todoId: string;
+  subjectId: string;
+  color: string;
+  content: string;
+}
+
+export interface BrainDumpItem {
+  id: string;
+  content: string;
+}
+
 export interface DailyInfo {
   date: string; // YYYY-MM-DD
   dday: {
@@ -32,6 +44,9 @@ export interface DailyInfo {
     targetDate: string;
   } | null;
   dailyQuote: string;
+  brainDump: BrainDumpItem[];
+  bigThree: [string, string, string];
+  feedback: string;
 }
 
 export interface DailyPlannerData {
@@ -100,7 +115,7 @@ export function formatDday(days: number): string {
 }
 
 export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 11);
 }
 
 export function getDateString(date: Date = new Date()): string {

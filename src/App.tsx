@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigation } from './components/Navigation';
 import { AddAppSheetPage } from './components/AddAppSheetPage';
 import { DailyPlannerSheet } from './components/daily-planner';
+import { SheetTabBar } from './components/SheetTabBar';
 
 // localStorage 키 상수
 const STORAGE_KEYS = {
@@ -312,6 +313,30 @@ export default function App() {
     window.location.reload();
   };
 
+  // 각 패널의 탭 목록을 빌드 (활성 탭 + 나머지 시트 최대 3개)
+  function buildTabsForPanel(
+    position: 'left' | 'right',
+    sheets: { left: string | null; right: string | null },
+    allSheets: Array<{ id: string; name: string; isNew: boolean }>
+  ) {
+    const activeSheet = sheets[position];
+    const tabs: Array<{ name: string; isActive: boolean }> = [];
+
+    // 활성 시트 먼저
+    if (activeSheet) {
+      tabs.push({ name: activeSheet, isActive: true });
+    }
+
+    // 나머지 시트들 (활성이 아닌 것, 반대편에서 열린 것도 포함)
+    for (const sheet of allSheets) {
+      if (tabs.length >= 3) break;
+      if (sheet.name === activeSheet) continue;
+      tabs.push({ name: sheet.name, isActive: false });
+    }
+
+    return tabs;
+  }
+
   return (
     <div className="min-h-screen bg-slate-200 flex flex-col items-center justify-center p-8 gap-[16px]">
       {/* iPad Pro 11" Frame - Landscape - 내부 화면 1194 × 834 px */}
@@ -352,83 +377,159 @@ export default function App() {
             />
 
             {/* Main Content Area - Fixed Size */}
-            <div className="w-full h-full flex">
-              {/* Left Sheet */}
+            <div className="w-full h-full flex flex-col">
+              {/* Top Tab Bar */}
               <div
-                onClick={() => handleSheetClick('left')}
-                className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
-                  isNavExpanded && focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
-                }`}
-                style={{ width: '597px' }}
+                className="flex items-center flex-shrink-0"
+                style={{
+                  height: '44px',
+                  borderBottom: '1px solid rgba(0,0,0,0.1)',
+                  backgroundColor: '#fdfdfd',
+                }}
               >
-                {selectedSheets.left && isNavExpanded && (
-                  <div className="absolute top-[16px] right-[16px] z-40">
-                    <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                      <span className="font-medium" style={{ fontSize: '14px' }}>
-                        {selectedSheets.left}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {/* Sheet Content */}
-                {selectedSheets.left === '하루 계획' && (
-                  <DailyPlannerSheet />
-                )}
+                {/* Sidebar toggle */}
+                <button
+                  onClick={handleNavToggle}
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 'none',
+                    background: 'none',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c7875" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="18" rx="2" />
+                    <rect x="14" y="3" width="7" height="18" rx="2" />
+                  </svg>
+                </button>
+
+                {/* Left panel tabs */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                  <SheetTabBar
+                    tabs={buildTabsForPanel('left', selectedSheets, appSheets)}
+                    onTabClick={(name) => handleSheetSelect(name, 'left')}
+                    onTabClose={(name) => setSelectedSheets(prev => ({ ...prev, left: prev.left === name ? null : prev.left }))}
+                  />
+                </div>
+
+                {/* Divider between left/right tabs */}
+                <div style={{ width: '1px', height: '24px', backgroundColor: 'rgba(0,0,0,0.1)', flexShrink: 0 }} />
+
+                {/* Right panel tabs */}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                  <SheetTabBar
+                    tabs={buildTabsForPanel('right', selectedSheets, appSheets)}
+                    onTabClick={(name) => handleSheetSelect(name, 'right')}
+                    onTabClose={(name) => setSelectedSheets(prev => ({ ...prev, right: prev.right === name ? null : prev.right }))}
+                    align="left"
+                  />
+                </div>
+
+                {/* Undo / Redo buttons */}
+                <div style={{ display: 'flex', gap: '4px', paddingRight: '8px', flexShrink: 0 }}>
+                  <button
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: 'none',
+                      background: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c7875" strokeWidth="2">
+                      <path d="M3 10h14a4 4 0 0 1 0 8H9" />
+                      <polyline points="7 14 3 10 7 6" />
+                    </svg>
+                  </button>
+                  <button
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: 'none',
+                      background: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '6px',
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c7875" strokeWidth="2">
+                      <path d="M21 10H7a4 4 0 0 0 0 8h8" />
+                      <polyline points="17 14 21 10 17 6" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
-              {/* Divider (if both sheets selected) */}
-              {selectedSheets.left && selectedSheets.right && (
-                <div className="w-[1px] bg-border"></div>
-              )}
+              {/* Sheet Panels */}
+              <div className="flex flex-1 min-h-0">
+                {/* Left Sheet */}
+                <div
+                  onClick={() => handleSheetClick('left')}
+                  className={`h-full bg-card border-r border-border transition-all duration-200 relative ${
+                    isNavExpanded && focusedSheet === 'left' ? 'ring-2 ring-primary ring-inset' : ''
+                  }`}
+                  style={{ width: '597px' }}
+                >
+                  {/* Sheet Content */}
+                  {selectedSheets.left === '하루 계획' && (
+                    <DailyPlannerSheet />
+                  )}
+                </div>
 
-              {/* Right Sheet */}
-              <div
-                onClick={() => handleSheetClick('right')}
-                className={`h-full bg-card transition-all duration-200 relative ${
-                  isNavExpanded && focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
-                }`}
-                style={{ width: '597px' }}
-              >
-                {/* 편집 모드일 때 편집기 표시 */}
-                {editingSheet ? (
-                  <div className="w-full h-full flex flex-col">
-                    {/* 편집기 헤더 */}
-                    <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-border">
-                      <h2 className="font-medium" style={{ fontSize: '18px' }}>
-                        {editingSheet} 수정
-                      </h2>
-                      <button
-                        onClick={handleCloseEditor}
-                        className="px-[16px] py-[8px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                        style={{ fontSize: '14px' }}
-                      >
-                        완료
-                      </button>
-                    </div>
-                    {/* 편집기 내용 - 빈 화면 */}
-                    <div className="flex-1 flex items-center justify-center">
-                      <p className="text-muted-foreground" style={{ fontSize: '16px' }}>
-                        앱시트 편집 화면
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {selectedSheets.right && isNavExpanded && (
-                      <div className="absolute top-[16px] left-[16px] z-40">
-                        <div className="px-[16px] py-[8px] rounded-[8px] bg-background/80 backdrop-blur-sm border border-border">
-                          <span className="font-medium" style={{ fontSize: '14px' }}>
-                            {selectedSheets.right}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    {/* Sheet Content */}
-                    {selectedSheets.right === '하루 계획' && (
-                      <DailyPlannerSheet />
-                    )}
-                  </>
+                {/* Divider (if both sheets selected) */}
+                {selectedSheets.left && selectedSheets.right && (
+                  <div className="w-[1px] bg-border"></div>
                 )}
+
+                {/* Right Sheet */}
+                <div
+                  onClick={() => handleSheetClick('right')}
+                  className={`h-full bg-card transition-all duration-200 relative ${
+                    isNavExpanded && focusedSheet === 'right' ? 'ring-2 ring-primary ring-inset' : ''
+                  }`}
+                  style={{ width: '597px' }}
+                >
+                  {/* 편집 모드일 때 편집기 표시 */}
+                  {editingSheet ? (
+                    <div className="w-full h-full flex flex-col">
+                      <div className="flex items-center justify-between px-[24px] py-[16px] border-b border-border">
+                        <h2 className="font-medium" style={{ fontSize: '18px' }}>
+                          {editingSheet} 수정
+                        </h2>
+                        <button
+                          onClick={handleCloseEditor}
+                          className="px-[16px] py-[8px] rounded-[8px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                          style={{ fontSize: '14px' }}
+                        >
+                          완료
+                        </button>
+                      </div>
+                      <div className="flex-1 flex items-center justify-center">
+                        <p className="text-muted-foreground" style={{ fontSize: '16px' }}>
+                          앱시트 편집 화면
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Sheet Content */}
+                      {selectedSheets.right === '하루 계획' && (
+                        <DailyPlannerSheet />
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

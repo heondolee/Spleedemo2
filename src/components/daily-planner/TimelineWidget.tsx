@@ -10,7 +10,7 @@ import {
   TIMELINE_END_MINUTES,
   formatHourLabel,
 } from './types';
-import type { DragData } from './TasksWidget';
+import type { DragData } from './types';
 
 // window 타입 확장
 declare global {
@@ -596,7 +596,7 @@ export function TimelineWidget({
             right: 0,
             top: `${(i + 1) * ROW_HEIGHT}px`,
             height: '1px',
-            backgroundColor: 'rgba(128, 128, 128, 0.3)',
+            backgroundColor: '#d0d0d0',
           }}
         />
       );
@@ -613,7 +613,7 @@ export function TimelineWidget({
             left: `${j * CELL_WIDTH}px`,
             width: '1px',
             height: `${totalHeight}px`,
-            backgroundColor: 'rgba(128, 128, 128, 0.3)',
+            backgroundColor: '#d0d0d0',
           }}
         />
       );
@@ -623,76 +623,56 @@ export function TimelineWidget({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden relative">
-      {/* 헤더 */}
-      <div className="flex border-b border-border flex-shrink-0 relative">
-        {/* Plan 헤더 */}
+    <div className="flex flex-col overflow-hidden relative" style={{ backgroundColor: 'white', border: '1px solid #eeeeec', borderRadius: '10px', height: '100%' }}>
+      {/* PLAN / DONE 라벨 행 */}
+      <div className="flex flex-shrink-0 relative" style={{ borderBottom: '1px solid #d0d0d0' }}>
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: `${6 * CELL_WIDTH}px`, height: '20px', borderBottom: '1px solid #d0d0d0' }}>
+          <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 500, fontSize: '11px', color: '#7c7875' }}>PLAN</span>
+        </div>
+        <div className="flex-shrink-0" style={{ width: '20px', height: '20px', borderBottom: '1px solid #d0d0d0' }} />
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: `${6 * CELL_WIDTH}px`, height: '20px', borderBottom: '1px solid #d0d0d0' }}>
+          <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 500, fontSize: '11px', color: '#7c7875' }}>DONE</span>
+        </div>
+      </div>
+
+      {/* 10분 단위 헤더 */}
+      <div className="flex flex-shrink-0 relative" style={{ borderBottom: '1px solid #d0d0d0' }}>
+        {/* Plan 헤더 숫자 */}
         <div className="relative flex-shrink-0" style={{ width: `${6 * CELL_WIDTH}px`, minWidth: `${6 * CELL_WIDTH}px` }}>
           <div className="flex">
             {[10, 20, 30, 40, 50, 60].map((min) => (
               <div
                 key={`plan-${min}`}
-                className="text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] flex-shrink-0"
-                style={{ width: `${CELL_WIDTH}px`, minWidth: `${CELL_WIDTH}px` }}
+                className="flex-shrink-0 flex items-center justify-center"
+                style={{ width: `${CELL_WIDTH}px`, minWidth: `${CELL_WIDTH}px`, height: '20px', borderRight: min < 60 ? '1px solid #d0d0d0' : 'none', borderBottom: '1px solid #d0d0d0' }}
               >
-                {min}
+                <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 500, fontSize: '11px', color: '#d0d0d0' }}>{min}</span>
               </div>
             ))}
           </div>
-          {/* 헤더 세로선 */}
-          {[1, 2, 3, 4, 5].map(j => (
-            <div
-              key={`plan-hline-${j}`}
-              style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: `${j * CELL_WIDTH}px`,
-                width: '1px',
-                backgroundColor: 'rgba(128, 128, 128, 0.3)',
-              }}
-            />
-          ))}
         </div>
-        {/* Time 헤더 (빈칸) */}
-        <div className="flex-shrink-0" style={{ width: '32px', minWidth: '32px' }} />
-        {/* Done 헤더 */}
+        {/* Time 헤더 (현재 시간 표시기) */}
+        <div className="flex-shrink-0" style={{ width: '20px', minWidth: '20px' }} />
+        {/* Done 헤더 숫자 */}
         <div className="relative flex-shrink-0" style={{ width: `${6 * CELL_WIDTH}px`, minWidth: `${6 * CELL_WIDTH}px` }}>
           <div className="flex">
             {[10, 20, 30, 40, 50, 60].map((min) => (
               <div
                 key={`done-${min}`}
-                className="text-left text-[10px] text-muted-foreground py-[6px] pl-[2px] flex-shrink-0"
-                style={{ width: `${CELL_WIDTH}px`, minWidth: `${CELL_WIDTH}px` }}
+                className="flex-shrink-0 flex items-center justify-center"
+                style={{ width: `${CELL_WIDTH}px`, minWidth: `${CELL_WIDTH}px`, height: '20px', borderRight: min < 60 ? '1px solid #d0d0d0' : 'none', borderBottom: '1px solid #d0d0d0' }}
               >
-                {min}
+                <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 500, fontSize: '11px', color: '#d0d0d0' }}>{min}</span>
               </div>
             ))}
           </div>
-          {/* 헤더 세로선 */}
-          {[1, 2, 3, 4, 5].map(j => (
-            <div
-              key={`done-hline-${j}`}
-              style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: `${j * CELL_WIDTH}px`,
-                width: '1px',
-                backgroundColor: 'rgba(128, 128, 128, 0.3)',
-              }}
-            />
-          ))}
         </div>
-        {/* 열 구분선 (Plan|Time, Time|Done) */}
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH}px`, width: '1px', backgroundColor: 'rgba(128, 128, 128, 0.5)' }} />
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH + 32}px`, width: '1px', backgroundColor: 'rgba(128, 128, 128, 0.5)' }} />
       </div>
 
       {/* 타임라인 본체 */}
       <div
         ref={scrollContainerRef}
-        className="overflow-hidden"
+        className="overflow-auto flex-1"
       >
         <div className="flex relative" style={{ height: `${totalHeight}px` }}>
           {/* Plan 열 */}
@@ -729,8 +709,8 @@ export function TimelineWidget({
 
           {/* Time 열 */}
           <div
-            className="relative bg-accent/20 flex-shrink-0 overflow-hidden"
-            style={{ width: '32px', minWidth: '32px', maxWidth: '32px' }}
+            className="relative flex-shrink-0 overflow-hidden"
+            style={{ width: '20px', minWidth: '20px', maxWidth: '20px', borderLeft: '1px solid #e2e0dd', borderRight: '1px solid #e2e0dd' }}
           >
             {hours.map((hour, i) => (
               <div
@@ -738,7 +718,7 @@ export function TimelineWidget({
                 className="flex items-center justify-center"
                 style={{ height: `${ROW_HEIGHT}px` }}
               >
-                <span className="text-[11px] text-muted-foreground">
+                <span style={{ fontFamily: 'Pretendard, sans-serif', fontWeight: 500, fontSize: '11px', color: '#7c7875', textAlign: 'center', width: '14px' }}>
                   {formatHourLabel(hour)}
                 </span>
               </div>
@@ -753,7 +733,7 @@ export function TimelineWidget({
                   right: 0,
                   top: `${(i + 1) * ROW_HEIGHT}px`,
                   height: '1px',
-                  backgroundColor: 'rgba(128, 128, 128, 0.3)',
+                  backgroundColor: '#d0d0d0',
                 }}
               />
             ))}
@@ -792,8 +772,8 @@ export function TimelineWidget({
           </div>
 
           {/* 열 구분선 (Plan|Time, Time|Done) */}
-          <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH}px`, width: '1px', backgroundColor: 'rgba(128, 128, 128, 0.5)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH + 32}px`, width: '1px', backgroundColor: 'rgba(128, 128, 128, 0.5)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH}px`, width: '1px', backgroundColor: '#e2e0dd', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${6 * CELL_WIDTH + 20}px`, width: '1px', backgroundColor: '#e2e0dd', pointerEvents: 'none' }} />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import {
   Todo,
   TimelineBlock,
   DailyInfo,
+  BrainDumpItem,
   getDateString,
   generateId,
   SUBJECT_COLORS,
@@ -19,6 +20,9 @@ function getDefaultData(dateString: string): DailyPlannerData {
       date: dateString,
       dday: null,
       dailyQuote: '',
+      brainDump: [],
+      bigThree: ['', '', ''],
+      feedback: '',
     },
     subjects: [],
     todos: [],
@@ -89,6 +93,53 @@ export function useDailyPlannerState(initialDate?: string) {
       ...prev,
       dailyInfo: { ...prev.dailyInfo, ...updates },
     }));
+  }, []);
+
+  // Brain Dump 관련 함수들
+  const addBrainDumpItem = useCallback((content: string) => {
+    const newItem: BrainDumpItem = { id: generateId(), content };
+    setData(prev => ({
+      ...prev,
+      dailyInfo: {
+        ...prev.dailyInfo,
+        brainDump: [...prev.dailyInfo.brainDump, newItem],
+      },
+    }));
+    return newItem;
+  }, []);
+
+  const updateBrainDumpItem = useCallback((id: string, content: string) => {
+    setData(prev => ({
+      ...prev,
+      dailyInfo: {
+        ...prev.dailyInfo,
+        brainDump: prev.dailyInfo.brainDump.map(item =>
+          item.id === id ? { ...item, content } : item
+        ),
+      },
+    }));
+  }, []);
+
+  const deleteBrainDumpItem = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      dailyInfo: {
+        ...prev.dailyInfo,
+        brainDump: prev.dailyInfo.brainDump.filter(item => item.id !== id),
+      },
+    }));
+  }, []);
+
+  // Big Three 업데이트
+  const updateBigThree = useCallback((index: number, value: string) => {
+    setData(prev => {
+      const newBigThree = [...prev.dailyInfo.bigThree] as [string, string, string];
+      newBigThree[index] = value;
+      return {
+        ...prev,
+        dailyInfo: { ...prev.dailyInfo, bigThree: newBigThree },
+      };
+    });
   }, []);
 
   // 과목 관련 함수들
@@ -221,6 +272,12 @@ export function useDailyPlannerState(initialDate?: string) {
     currentDate,
     changeDate,
     updateDailyInfo,
+    // Brain Dump
+    addBrainDumpItem,
+    updateBrainDumpItem,
+    deleteBrainDumpItem,
+    // Big Three
+    updateBigThree,
     // Subject
     addSubject,
     updateSubject,

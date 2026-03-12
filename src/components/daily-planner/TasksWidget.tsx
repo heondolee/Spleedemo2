@@ -600,6 +600,7 @@ export function TasksWidget({
                                 value={editTodoContent}
                                 onChange={(e) => setEditTodoContent(e.target.value)}
                                 onKeyDown={(e) => {
+                                  if (e.nativeEvent.isComposing) return;
                                   if (e.key === 'Enter') handleEditTodo(todo.id);
                                   if (e.key === 'Escape') { setEditTodoContent(''); setEditingTodoId(null); }
                                 }}
@@ -649,6 +650,7 @@ export function TasksWidget({
                         value={newTodoContent}
                         onChange={(e) => setNewTodoContent(e.target.value)}
                         onKeyDown={(e) => {
+                          if (e.nativeEvent.isComposing) return;
                           if (e.key === 'Enter') handleAddTodo(subject.id);
                           if (e.key === 'Escape') { setNewTodoContent(''); setAddingTodoSubjectId(null); }
                         }}
@@ -709,6 +711,7 @@ export function TasksWidget({
             value={newSubjectName}
             onChange={(e) => setNewSubjectName(e.target.value)}
             onKeyDown={(e) => {
+              if (e.nativeEvent.isComposing) return;
               if (e.key === 'Enter') handleAddSubject();
               if (e.key === 'Escape') { setNewSubjectName(''); setIsAddingSubject(false); }
             }}

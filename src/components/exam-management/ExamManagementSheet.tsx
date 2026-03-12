@@ -22,12 +22,16 @@ export function ExamManagementSheet() {
     if (isAddingSubject && subjectInputRef.current) subjectInputRef.current.focus();
   }, [isAddingSubject]);
 
+  const subjectSubmittedRef = useRef(false);
   const handleAddSubject = () => {
+    if (subjectSubmittedRef.current) return;
+    subjectSubmittedRef.current = true;
     if (newSubjectName.trim()) {
       addSubject(newSubjectName.trim());
       setNewSubjectName('');
     }
     setIsAddingSubject(false);
+    setTimeout(() => { subjectSubmittedRef.current = false; }, 0);
   };
 
   const ddayValue = selectedExam ? calculateDday(selectedExam.date) : null;
@@ -110,7 +114,7 @@ export function ExamManagementSheet() {
                 type="text"
                 value={newSubjectName}
                 onChange={e => setNewSubjectName(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleAddSubject(); if (e.key === 'Escape') { setNewSubjectName(''); setIsAddingSubject(false); } }}
+                onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') handleAddSubject(); if (e.key === 'Escape') { setNewSubjectName(''); setIsAddingSubject(false); } }}
                 onBlur={handleAddSubject}
                 placeholder="과목명"
                 style={{
@@ -208,12 +212,15 @@ export function AddPlaceholder({
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     if (isEditing && inputRef.current) inputRef.current.focus();
   }, [isEditing]);
 
   const handleSubmit = () => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     if (value.trim()) {
       onAdd(value.trim());
       setValue('');
@@ -221,6 +228,7 @@ export function AddPlaceholder({
     } else {
       setIsEditing(false);
     }
+    setTimeout(() => { submittedRef.current = false; }, 0);
   };
 
   if (isEditing) {
@@ -239,7 +247,7 @@ export function AddPlaceholder({
           type="text"
           value={value}
           onChange={e => setValue(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') { setValue(''); setIsEditing(false); } }}
+          onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') { setValue(''); setIsEditing(false); } }}
           onBlur={handleSubmit}
           placeholder={label}
           style={{

@@ -54,7 +54,7 @@ export function ChapterCard({ chapter, index, state }: ChapterCardProps) {
                   type="text"
                   value={editState.value}
                   onChange={e => editState.setValue(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') editState.submit(); if (e.key === 'Escape') editState.cancel(); }}
+                  onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') editState.submit(); if (e.key === 'Escape') editState.cancel(); }}
                   onBlur={editState.submit}
                   style={{
                     flex: 1, fontSize: '14px', fontWeight: 500, color: '#7c7875',
@@ -115,7 +115,7 @@ export function ChapterCard({ chapter, index, state }: ChapterCardProps) {
                           type="text"
                           value={secEdit.value}
                           onChange={e => secEdit.setValue(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') secEdit.submit(); if (e.key === 'Escape') secEdit.cancel(); }}
+                          onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') secEdit.submit(); if (e.key === 'Escape') secEdit.cancel(); }}
                           onBlur={secEdit.submit}
                           style={{
                             fontSize: '14px', fontWeight: 500, color: '#4a4846',
@@ -151,7 +151,7 @@ export function ChapterCard({ chapter, index, state }: ChapterCardProps) {
                                     type="text"
                                     value={subEdit.value}
                                     onChange={e => subEdit.setValue(e.target.value)}
-                                    onKeyDown={e => { if (e.key === 'Enter') subEdit.submit(); if (e.key === 'Escape') subEdit.cancel(); }}
+                                    onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') subEdit.submit(); if (e.key === 'Escape') subEdit.cancel(); }}
                                     onBlur={subEdit.submit}
                                     style={{
                                       fontSize: '14px', fontWeight: 500, color: '#4a4846',
@@ -192,7 +192,7 @@ export function ChapterCard({ chapter, index, state }: ChapterCardProps) {
                                               type="text"
                                               value={taskEdit.value}
                                               onChange={e => taskEdit.setValue(e.target.value)}
-                                              onKeyDown={e => { if (e.key === 'Enter') taskEdit.submit(); if (e.key === 'Escape') taskEdit.cancel(); }}
+                                              onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') taskEdit.submit(); if (e.key === 'Escape') taskEdit.cancel(); }}
                                               onBlur={taskEdit.submit}
                                               style={{
                                                 flex: 1, fontSize: '14px', fontWeight: 500, color: '#4a4846',
@@ -314,6 +314,7 @@ function SwipeContainer({
   const swipeCurrentX = useRef(0);
   const isSwipingRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -330,10 +331,13 @@ function SwipeContainer({
   };
 
   const handleSubmit = () => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     if (value.trim() && value.trim() !== editValue) {
       onEditSubmit(value.trim());
     }
     setIsEditing(false);
+    setTimeout(() => { submittedRef.current = false; }, 0);
   };
 
   const handleCancel = () => {
@@ -436,10 +440,14 @@ function InlineAdd({ placeholder, prefix, onAdd, bgColor = 'white' }: { placehol
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const submittedRef = useRef(false);
   useEffect(() => { if (isEditing && inputRef.current) inputRef.current.focus(); }, [isEditing]);
 
   const handleSubmit = () => {
-    if (value.trim()) { onAdd(value.trim()); setValue(''); } else { setIsEditing(false); }
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    if (value.trim()) { onAdd(value.trim()); setValue(''); }  else { setIsEditing(false); }
+    setTimeout(() => { submittedRef.current = false; }, 0);
   };
 
   if (isEditing) {
@@ -447,7 +455,7 @@ function InlineAdd({ placeholder, prefix, onAdd, bgColor = 'white' }: { placehol
       <div style={{ backgroundColor: bgColor, borderRadius: '5px', padding: '3px', display: 'flex', alignItems: 'center', gap: '3px', width: '100%' }}>
         {prefix && <span style={{ fontSize: '14px', color: '#d0d0d0' }}>{prefix}</span>}
         <input ref={inputRef} type="text" value={value} onChange={e => setValue(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') { setValue(''); setIsEditing(false); } }}
+          onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') { setValue(''); setIsEditing(false); } }}
           onBlur={handleSubmit} placeholder={placeholder}
           style={{ flex: 1, fontSize: '14px', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'Pretendard, sans-serif' }}
         />
@@ -476,10 +484,14 @@ function DashedAdd({ label, prefix, onAdd }: { label: string; prefix?: string; o
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const submittedRef = useRef(false);
   useEffect(() => { if (isEditing && inputRef.current) inputRef.current.focus(); }, [isEditing]);
 
   const handleSubmit = () => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     if (value.trim()) { onAdd(value.trim()); setValue(''); } else { setIsEditing(false); }
+    setTimeout(() => { submittedRef.current = false; }, 0);
   };
 
   if (isEditing) {
@@ -487,7 +499,7 @@ function DashedAdd({ label, prefix, onAdd }: { label: string; prefix?: string; o
       <div style={{ border: '1px dashed #d0d0d0', borderRadius: '5px', padding: '3px', display: 'flex', alignItems: 'center', gap: '3px', width: '100%' }}>
         {prefix && <span style={{ fontSize: '14px', color: '#d0d0d0' }}>{prefix}</span>}
         <input ref={inputRef} type="text" value={value} onChange={e => setValue(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') { setValue(''); setIsEditing(false); } }}
+          onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') handleSubmit(); if (e.key === 'Escape') { setValue(''); setIsEditing(false); } }}
           onBlur={handleSubmit} placeholder={label}
           style={{ flex: 1, fontSize: '14px', border: 'none', outline: 'none', background: 'transparent', fontFamily: 'Pretendard, sans-serif' }}
         />

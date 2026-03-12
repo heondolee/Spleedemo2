@@ -155,7 +155,7 @@ export function ExamDropdown({ state, onClose }: ExamDropdownProps) {
                       type="text"
                       value={name}
                       onChange={e => setName(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleUpdate(); if (e.key === 'Escape') { setEditingId(null); setName(''); } }}
+                      onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') handleUpdate(); if (e.key === 'Escape') { setEditingId(null); setName(''); } }}
                       style={{ width: '100%', fontSize: '16px', fontWeight: 600, color: '#4a4846', border: 'none', outline: 'none', fontFamily: 'Pretendard, sans-serif' }}
                     />
                   </div>
@@ -246,7 +246,7 @@ export function ExamDropdown({ state, onClose }: ExamDropdownProps) {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setIsAdding(false); setName(''); } }}
+                  onKeyDown={e => { if (e.nativeEvent.isComposing) return; if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') { setIsAdding(false); setName(''); } }}
                   placeholder="시험 이름을 입력하세요"
                   style={{ width: '100%', fontSize: '16px', fontWeight: 600, color: '#4a4846', border: 'none', outline: 'none', fontFamily: 'Pretendard, sans-serif' }}
                 />

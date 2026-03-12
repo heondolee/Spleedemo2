@@ -67,6 +67,7 @@ export function BigThreeWidget({ items, onUpdate }: BigThreeWidgetProps) {
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={(e) => {
+                    if (e.nativeEvent.isComposing) return;
                     if (e.key === 'Enter') handleSave(index);
                     if (e.key === 'Escape') { setEditingIndex(null); setEditValue(''); }
                   }}

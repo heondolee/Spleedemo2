@@ -86,6 +86,7 @@ export function BrainDumpWidget({ items, onAdd, onUpdate, onDelete }: BrainDumpW
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   onKeyDown={(e) => {
+                    if (e.nativeEvent.isComposing) return;
                     if (e.key === 'Enter') handleEdit(item.id);
                     if (e.key === 'Escape') { setEditingId(null); setEditContent(''); }
                   }}
@@ -123,6 +124,7 @@ export function BrainDumpWidget({ items, onAdd, onUpdate, onDelete }: BrainDumpW
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
               onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return;
                 if (e.key === 'Enter') handleAdd();
                 if (e.key === 'Escape') { setNewContent(''); setIsAdding(false); }
               }}

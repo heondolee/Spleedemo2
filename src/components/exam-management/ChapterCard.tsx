@@ -343,6 +343,7 @@ function SwipeContainer({
 
   const handleSwipeStart = (e: React.TouchEvent | React.MouseEvent) => {
     if (disabled || isEditing) return;
+    e.stopPropagation();
     if (isSwiped) { setIsSwiped(false); setSwipeOffset(0); return; }
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     swipeStartX.current = clientX;
@@ -352,6 +353,7 @@ function SwipeContainer({
 
   const handleSwipeMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isSwipingRef.current) return;
+    e.stopPropagation();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     swipeCurrentX.current = clientX;
     const diff = swipeStartX.current - clientX;
@@ -361,8 +363,9 @@ function SwipeContainer({
     }
   };
 
-  const handleSwipeEnd = () => {
+  const handleSwipeEnd = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isSwipingRef.current) return;
+    e.stopPropagation();
     isSwipingRef.current = false;
     if (swipeOffset > SWIPE_THRESHOLD / 2) {
       setSwipeOffset(SWIPE_THRESHOLD);
@@ -412,7 +415,7 @@ function SwipeContainer({
         onMouseDown={handleSwipeStart}
         onMouseMove={handleSwipeMove}
         onMouseUp={handleSwipeEnd}
-        onMouseLeave={handleSwipeEnd}
+        onMouseLeave={() => { if (!isSwipingRef.current) return; isSwipingRef.current = false; if (swipeOffset > SWIPE_THRESHOLD / 2) { setSwipeOffset(SWIPE_THRESHOLD); } else { setIsSwiped(false); setSwipeOffset(0); } }}
         style={{
           position: 'relative',
           zIndex: 2,

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigation } from './components/Navigation';
 import { AddAppSheetPage } from './components/AddAppSheetPage';
 import { DailyPlannerSheet } from './components/daily-planner';
+import { ExamManagementSheet } from './components/exam-management';
 import { SheetTabBar } from './components/SheetTabBar';
 
 // localStorage 키 상수
@@ -485,6 +486,9 @@ export default function App() {
                   {selectedSheets.left === '하루 계획' && (
                     <DailyPlannerSheet />
                   )}
+                  {selectedSheets.left === '시험 관리' && (
+                    <ExamManagementSheet />
+                  )}
                 </div>
 
                 {/* Divider (if both sheets selected) */}
@@ -526,6 +530,9 @@ export default function App() {
                       {/* Sheet Content */}
                       {selectedSheets.right === '하루 계획' && (
                         <DailyPlannerSheet />
+                      )}
+                      {selectedSheets.right === '시험 관리' && (
+                        <ExamManagementSheet />
                       )}
                     </>
                   )}

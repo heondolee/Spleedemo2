@@ -5,6 +5,7 @@ import { BigThreeWidget } from './BigThreeWidget';
 import { CommentWidget } from './CommentWidget';
 import { FeedbackWidget } from './FeedbackWidget';
 import { TimelineWidget } from './TimelineWidget';
+import { TasksWidget } from './TasksWidget';
 import {
   formatDateKorean,
   calculateDday,
@@ -26,6 +27,13 @@ export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
     updateBrainDumpItem,
     deleteBrainDumpItem,
     updateBigThree,
+    addSubject,
+    updateSubject,
+    deleteSubject,
+    addTodo,
+    updateTodo,
+    deleteTodo,
+    toggleTodoComplete,
     addTimelineBlock,
     updateTimelineBlock,
     deleteTimelineBlock,
@@ -74,10 +82,10 @@ export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
     setIsEditingDday(false);
   };
 
-  // 달성량 계산 (done 블록 기준)
-  const achievementTime = data.timelineBlocks
-    .filter(b => b.type === 'done')
-    .reduce((total, b) => total + (b.endTime - b.startTime), 0);
+  // 달성량 계산 (완료된 투두 비율 기준)
+  const totalTodos = data.todos.length;
+  const completedTodos = data.todos.filter(t => t.isCompleted).length;
+  const achievementPercent = totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0;
 
   return (
     <div
@@ -263,7 +271,7 @@ export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
         >
           <span style={{ fontWeight: 500, fontSize: '14px', color: '#7c7875' }}>달성량</span>
           <span style={{ fontWeight: 600, fontSize: '16px', color: '#5d5957', marginTop: '5px' }}>
-            {achievementTime > 0 ? formatStudyTime(achievementTime) : '0분'}
+            {achievementPercent}%
           </span>
         </div>
 
@@ -274,18 +282,22 @@ export function DailyPlannerSheet({ initialDate }: DailyPlannerSheetProps) {
         />
       </div>
 
-      {/* === 좌하단 블록: 빈 영역 + Comment === */}
+      {/* === 좌하단 블록: 과목/투두 + Comment === */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '275px' }}>
-        {/* 빈 흰색 영역 (메모/자유 공간) */}
-        <div
-          style={{
-            backgroundColor: 'white',
-            border: '1px solid #eeeeec',
-            borderRadius: '10px',
-            height: '440px',
-            width: '275px',
-          }}
-        />
+        {/* 과목/투두 위젯 */}
+        <div style={{ width: '275px', maxHeight: '440px', overflow: 'auto' }}>
+          <TasksWidget
+            subjects={data.subjects}
+            todos={data.todos}
+            onAddSubject={addSubject}
+            onUpdateSubject={updateSubject}
+            onDeleteSubject={deleteSubject}
+            onAddTodo={addTodo}
+            onUpdateTodo={updateTodo}
+            onDeleteTodo={deleteTodo}
+            onToggleTodo={toggleTodoComplete}
+          />
+        </div>
 
         {/* Comment */}
         <CommentWidget

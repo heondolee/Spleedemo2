@@ -233,12 +233,13 @@ export function Navigation({
   if (!isExpanded) {
     // 완전히 접힌 상태 - 토글 버튼만 표시
     return (
-      <div className="absolute left-[16px] top-[16px] z-50">
+      <div className="absolute left-[12px] top-[12px] z-50">
         <button
           onClick={onToggle}
-          className="w-[44px] h-[44px] flex items-center justify-center rounded-[8px] bg-background border border-border hover:bg-accent transition-colors shadow-lg"
+          className="w-[44px] h-[44px] flex items-center justify-center rounded-[12px] bg-[#F0EFED] border border-white hover:bg-[#E2E0DD] transition-colors"
+          style={{ boxShadow: '0px 0px 6px 0px rgba(0,0,0,0.1)' }}
         >
-          <PanelLeft className="w-[20px] h-[20px]" />
+          <PanelLeft className="w-[20px] h-[20px]" style={{ color: '#4A4846' }} />
         </button>
       </div>
     );
@@ -246,20 +247,25 @@ export function Navigation({
 
   return (
     <>
-      <div 
-        className="absolute left-0 top-0 h-full bg-background border-r border-border flex flex-col z-50 shadow-xl"
-        style={{ width: '240px' }}
+      <div
+        className="absolute left-[6px] top-[6px] flex flex-col z-50 rounded-[25px] border border-white"
+        style={{
+          width: '210px',
+          height: 'calc(100% - 12px)',
+          backgroundColor: '#F0EFED',
+          boxShadow: '0px 0px 6px 0px rgba(0,0,0,0.1)',
+        }}
       >
         {/* Profile & Toggle */}
-        <div className="p-[16px] flex items-center justify-between">
+        <div className="px-[16px] pt-[20px] pb-[8px] flex items-center justify-between">
           {/* Profile Image with Dropdown */}
           <div className="relative">
             <div
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium cursor-pointer hover:bg-primary/90 transition-colors"
-              style={{ width: '44px', height: '44px', fontSize: '16px' }}
+              className="rounded-full flex items-center justify-center cursor-pointer overflow-hidden"
+              style={{ width: '44px', height: '44px' }}
             >
-              U
+              <span style={{ fontSize: '36px', lineHeight: 1 }}>🐥</span>
             </div>
 
             {/* Profile Dropdown Menu */}
@@ -272,19 +278,18 @@ export function Navigation({
                 />
                 {/* Menu */}
                 <div
-                  className="absolute left-0 top-[52px] bg-background border border-border rounded-[12px] shadow-xl z-[101] overflow-hidden"
-                  style={{ width: '180px' }}
+                  className="absolute left-0 top-[52px] rounded-[12px] shadow-xl z-[101] overflow-hidden border border-white"
+                  style={{ width: '180px', backgroundColor: '#F0EFED' }}
                 >
                   <div className="py-[4px]">
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: 프로필 페이지 열기
                       }}
-                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-[#E2E0DD] transition-colors"
                     >
-                      <User className="w-[16px] h-[16px] text-muted-foreground" />
-                      <span style={{ fontSize: '14px' }}>프로필</span>
+                      <User className="w-[16px] h-[16px]" style={{ color: '#7C7875' }} />
+                      <span style={{ fontSize: '14px', color: '#4A4846' }}>프로필</span>
                     </button>
 
                     <button
@@ -292,10 +297,10 @@ export function Navigation({
                         setShowProfileMenu(false);
                         setShowSettings(true);
                       }}
-                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-[#E2E0DD] transition-colors"
                     >
-                      <Settings className="w-[16px] h-[16px] text-muted-foreground" />
-                      <span style={{ fontSize: '14px' }}>설정</span>
+                      <Settings className="w-[16px] h-[16px]" style={{ color: '#7C7875' }} />
+                      <span style={{ fontSize: '14px', color: '#4A4846' }}>설정</span>
                     </button>
 
                     <button
@@ -303,10 +308,10 @@ export function Navigation({
                         setShowProfileMenu(false);
                         setShowThemeDialog(true);
                       }}
-                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-[#E2E0DD] transition-colors"
                     >
-                      <Palette className="w-[16px] h-[16px] text-muted-foreground" />
-                      <span style={{ fontSize: '14px' }}>테마</span>
+                      <Palette className="w-[16px] h-[16px]" style={{ color: '#7C7875' }} />
+                      <span style={{ fontSize: '14px', color: '#4A4846' }}>테마</span>
                     </button>
 
                     <button
@@ -314,21 +319,20 @@ export function Navigation({
                         setShowProfileMenu(false);
                         setShowPlanDialog(true);
                       }}
-                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-[#E2E0DD] transition-colors"
                     >
-                      <CreditCard className="w-[16px] h-[16px] text-muted-foreground" />
-                      <span style={{ fontSize: '14px' }}>플랜</span>
+                      <CreditCard className="w-[16px] h-[16px]" style={{ color: '#7C7875' }} />
+                      <span style={{ fontSize: '14px', color: '#4A4846' }}>플랜</span>
                     </button>
 
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        // TODO: 휴지통 페이지 열기
                       }}
-                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-accent transition-colors"
+                      className="w-full flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-[#E2E0DD] transition-colors"
                     >
-                      <Trash2 className="w-[16px] h-[16px] text-muted-foreground" />
-                      <span style={{ fontSize: '14px' }}>휴지통</span>
+                      <Trash2 className="w-[16px] h-[16px]" style={{ color: '#7C7875' }} />
+                      <span style={{ fontSize: '14px', color: '#4A4846' }}>휴지통</span>
                     </button>
                   </div>
                 </div>
@@ -339,35 +343,36 @@ export function Navigation({
           {/* Toggle Button */}
           <button
             onClick={onToggle}
-            className="w-[44px] h-[44px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+            className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-[#E2E0DD] transition-colors"
           >
-            <ChevronLeft className="w-[20px] h-[20px]" />
+            <ChevronLeft className="w-[18px] h-[18px]" style={{ color: '#4A4846' }} />
           </button>
         </div>
 
         {/* App Sheets Section */}
         <>
           {/* Header */}
-          <div className="px-[16px] py-[12px] flex items-center justify-between">
-            <h3 className="font-medium" style={{ fontSize: '16px' }}>앱시트</h3>
-            <button 
+          <div className="px-[16px] flex items-center justify-between" style={{ height: '56px' }}>
+            <h3 className="font-semibold" style={{ fontSize: '20px', color: '#4A4846', fontFamily: 'Pretendard, sans-serif' }}>앱시트</h3>
+            <button
               onClick={() => setShowAddSheet(true)}
-              className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] hover:bg-accent transition-colors"
+              className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] transition-colors hover:bg-[#E2E0DD]"
+              style={{ backgroundColor: '#F0EFED' }}
             >
-              <Plus className="w-[16px] h-[16px]" />
+              <Plus className="w-[16px] h-[16px]" style={{ color: '#4A4846' }} />
             </button>
           </div>
 
           {/* Sheet List */}
-          <div className="flex-1 overflow-y-auto px-[8px] flex flex-col gap-[4px]">
-            {appSheets.map((sheet, index) => {
+          <div className="flex-1 overflow-y-auto flex flex-col gap-[4px]" style={{ padding: '0 12px' }}>
+            {appSheets.map((sheet) => {
               const isLeftSelected = selectedSheets.left === sheet.name;
               const isRightSelected = selectedSheets.right === sheet.name;
               const isAnySelected = isLeftSelected || isRightSelected;
               const isFocused = (isLeftSelected && focusedSheet === 'left') || (isRightSelected && focusedSheet === 'right');
               const isDraggedOver = dragState.draggedOverId === sheet.id && dragState.isDragging;
               const isDragged = dragState.draggedId === sheet.id && dragState.isDragging;
-              
+
               return (
                 <div
                   key={sheet.id}
@@ -376,16 +381,21 @@ export function Navigation({
                   onMouseMove={handleMouseMove}
                   onMouseUp={(e) => handleMouseUp(e, sheet)}
                   onMouseEnter={() => handleMouseEnter(sheet.id)}
-                  className={`flex items-center justify-between px-[16px] rounded-[12px] cursor-pointer transition-all ${
+                  className={`flex items-center justify-between px-[12px] rounded-[20px] cursor-pointer transition-all ${
                     isDragged ? 'opacity-50 scale-95' : ''
                   } ${
-                    isDraggedOver ? 'border-2 border-primary border-dashed' : ''
-                  } ${
-                    isFocused ? 'bg-primary/10' : 'hover:bg-accent'
+                    isDraggedOver ? 'border-2 border-dashed' : ''
                   }`}
-                  style={{ height: '48px', minHeight: '48px' }}
+                  style={{
+                    height: '48px',
+                    minHeight: '48px',
+                    width: '176px',
+                    margin: '0 auto',
+                    backgroundColor: isFocused ? '#E2E0DD' : 'transparent',
+                    borderColor: isDraggedOver ? '#4A4846' : undefined,
+                  }}
                 >
-                  {/* Left: Sheet Name + Badge */}
+                  {/* Left: Sheet Name */}
                   <div className="flex items-center gap-[8px] flex-1 min-w-0">
                     {editingSheetId === sheet.id ? (
                       <input
@@ -395,63 +405,69 @@ export function Navigation({
                         onChange={(e) => setEditingName(e.target.value)}
                         onKeyDown={handleKeyDown}
                         onBlur={saveEditing}
-                        className="flex-1 bg-transparent border-b-2 border-primary font-medium outline-none"
-                        style={{ fontSize: '15px' }}
+                        className="flex-1 bg-transparent outline-none"
+                        style={{
+                          fontSize: '16px',
+                          color: '#4A4846',
+                          fontFamily: 'Pretendard, sans-serif',
+                          fontWeight: 600,
+                          borderBottom: '2px solid #4A4846',
+                        }}
                         onClick={(e) => e.stopPropagation()}
                         onMouseDown={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="font-medium" style={{ fontSize: '15px' }}>
+                      <span
+                        className="truncate"
+                        style={{
+                          fontSize: '16px',
+                          fontFamily: 'Pretendard, sans-serif',
+                          fontWeight: isFocused ? 600 : 500,
+                          color: isFocused ? '#4A4846' : '#7C7875',
+                        }}
+                      >
                         {sheet.name}
                       </span>
                     )}
                     {sheet.isNew && (
-                      <span 
-                        className="px-[6px] py-[2px] bg-primary text-primary-foreground rounded-[4px] flex-shrink-0"
-                        style={{ fontSize: '11px' }}
+                      <span
+                        className="px-[6px] py-[2px] rounded-[4px] flex-shrink-0"
+                        style={{ fontSize: '11px', backgroundColor: '#4A4846', color: '#FFFFFF' }}
                       >
                         NEW
                       </span>
                     )}
                   </div>
 
-                  {/* Right: Position Indicators - Fixed width to prevent layout shift */}
-                  <div className="flex items-center justify-end flex-shrink-0" style={{ width: '24px', height: '24px' }}>
+                  {/* Right: Split View Icon */}
+                  <div className="flex items-center justify-end flex-shrink-0" style={{ width: '24px', height: '22px' }}>
                     {isAnySelected && (
-                      <svg 
-                        width="24" 
-                        height="24" 
-                        viewBox="0 0 24 24" 
-                        fill="none"
-                        className="text-primary"
-                      >
-                        {/* 왼쪽 화면 */}
-                        <rect 
-                          x="3" 
-                          y="5" 
-                          width="8" 
-                          height="14" 
-                          rx="2"
-                          stroke="currentColor" 
-                          strokeWidth="2"
-                          strokeDasharray={isLeftSelected ? '0' : '3 3'}
-                          fill={isLeftSelected ? 'currentColor' : 'none'}
-                          fillOpacity={isLeftSelected ? '0.3' : '0'}
+                      <div className="flex items-center gap-[2px]">
+                        {/* 왼쪽 패널 */}
+                        <div
+                          style={{
+                            width: '11px',
+                            height: '22px',
+                            borderRadius: '0 5px 5px 0',
+                            border: isLeftSelected ? 'none' : '1.5px solid #7C7875',
+                            background: isLeftSelected
+                              ? 'linear-gradient(90deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.2) 100%), linear-gradient(90deg, #5D5957 0%, #5D5957 100%)'
+                              : 'transparent',
+                          }}
                         />
-                        {/* 오른쪽 화면 */}
-                        <rect 
-                          x="13" 
-                          y="5" 
-                          width="8" 
-                          height="14" 
-                          rx="2"
-                          stroke="currentColor" 
-                          strokeWidth="2"
-                          strokeDasharray={isRightSelected ? '0' : '3 3'}
-                          fill={isRightSelected ? 'currentColor' : 'none'}
-                          fillOpacity={isRightSelected ? '0.3' : '0'}
+                        {/* 오른쪽 패널 */}
+                        <div
+                          style={{
+                            width: '11px',
+                            height: '22px',
+                            borderRadius: '0 5px 5px 0',
+                            border: isRightSelected ? 'none' : '1.5px solid #7C7875',
+                            background: isRightSelected
+                              ? 'linear-gradient(90deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.2) 100%), linear-gradient(90deg, #5D5957 0%, #5D5957 100%)'
+                              : 'transparent',
+                          }}
                         />
-                      </svg>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -229,570 +229,538 @@ export function TasksWidget({
   };
 
   return (
-    <div className="bg-card border border-border rounded-[12px] flex flex-col overflow-hidden">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-[12px] py-[10px] border-b border-border">
-        <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider text-left">
-          TASKS
-        </span>
-        <button
-          onClick={() => setIsAddingSubject(true)}
-          className="w-[28px] h-[28px] flex items-center justify-center rounded-[6px] hover:bg-accent transition-colors"
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontFamily: 'Pretendard, sans-serif' }}>
+      {/* 과목 카드 목록 */}
+      {subjects.length === 0 && !isAddingSubject && (
+        <div
+          style={{
+            backgroundColor: 'white',
+            border: '1px solid #eeeeec',
+            borderRadius: '10px',
+            padding: '16px',
+          }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
-      </div>
+          <p style={{ fontSize: '14px', color: '#7c7875', textAlign: 'left' }}>
+            과목을 추가하여 할 일을 관리하세요
+          </p>
+        </div>
+      )}
 
-      {/* 과목 목록 */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
-        {subjects.length === 0 && !isAddingSubject ? (
-          <div className="p-[16px]">
-            <p className="text-[13px] text-muted-foreground text-left">
-              과목을 추가하여 할 일을 관리하세요
-            </p>
-          </div>
-        ) : (
-          subjects.map(subject => {
-            const subjectTodos = getTodosForSubject(subject.id);
-            const isExpanded = expandedSubjects.has(subject.id);
-            const completedCount = subjectTodos.filter(t => t.isCompleted).length;
-            const isSubjectSwiped = swipedSubjectId === subject.id;
+      {subjects.map(subject => {
+        const subjectTodos = getTodosForSubject(subject.id);
+        const isExpanded = expandedSubjects.has(subject.id);
+        const isSubjectSwiped = swipedSubjectId === subject.id;
 
-            return (
-              <div key={subject.id} className="border-b border-border last:border-b-0 relative overflow-hidden">
-                {/* 삭제 버튼 배경 (과목 전체) */}
+        return (
+          <div
+            key={subject.id}
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid #eeeeec',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            {/* 삭제 버튼 배경 (과목 전체) */}
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: `${SWIPE_THRESHOLD}px`,
+                backgroundColor: '#d4183d',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <button
+                onClick={() => handleDeleteSubject(subject.id)}
+                style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 과목 컨테이너 - 스와이프 */}
+            <div
+              style={{
+                position: 'relative',
+                backgroundColor: 'white',
+                transform: isSubjectSwiped ? `translateX(-${swipeOffset}px)` : 'translateX(0)',
+                transition: isSwipingRef.current ? 'none' : 'transform 0.2s ease-out',
+              }}
+              onTouchStart={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest('[data-todo-item]')) {
+                  handleSwipeStart(e, 'subject', subject.id);
+                }
+              }}
+              onTouchMove={handleSwipeMove}
+              onTouchEnd={handleSwipeEnd}
+              onMouseDown={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest('[data-todo-item]')) {
+                  handleSwipeStart(e, 'subject', subject.id);
+                }
+              }}
+              onMouseMove={handleSwipeMove}
+              onMouseUp={handleSwipeEnd}
+              onMouseLeave={handleSwipeEnd}
+            >
+              {/* 과목 헤더 */}
+              <button
+                onClick={() => {
+                  if (!isSubjectSwiped) {
+                    toggleSubjectExpand(subject.id);
+                  } else {
+                    closeSwipe();
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
                 <div
-                  className="absolute right-0 top-0 bottom-0 bg-destructive flex items-center justify-center"
-                  style={{ width: `${SWIPE_THRESHOLD}px` }}
-                >
-                  <button
-                    onClick={() => handleDeleteSubject(subject.id)}
-                    className="w-full h-full flex items-center justify-center text-white"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* 과목 전체 컨테이너 - 헤더 + 하위 할일들 함께 스와이프 */}
-                <div
-                  className="relative bg-card transition-transform"
                   style={{
-                    transform: isSubjectSwiped ? `translateX(-${swipeOffset}px)` : 'translateX(0)',
-                    transition: isSwipingRef.current ? 'none' : 'transform 0.2s ease-out'
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    backgroundColor: subject.color,
+                    flexShrink: 0,
                   }}
-                  onTouchStart={(e) => {
-                    // 할일 영역에서 시작한 스와이프가 아닌 경우에만 과목 스와이프
-                    const target = e.target as HTMLElement;
-                    if (!target.closest('[data-todo-item]')) {
-                      handleSwipeStart(e, 'subject', subject.id);
-                    }
+                />
+                <span style={{ flex: 1, fontSize: '14px', fontWeight: 500, color: '#5d5957' }}>
+                  {subject.name}
+                </span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#7c7875"
+                  strokeWidth="2"
+                  style={{
+                    transition: 'transform 0.2s',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}
-                  onTouchMove={handleSwipeMove}
-                  onTouchEnd={handleSwipeEnd}
-                  onMouseDown={(e) => {
-                    const target = e.target as HTMLElement;
-                    if (!target.closest('[data-todo-item]')) {
-                      handleSwipeStart(e, 'subject', subject.id);
-                    }
-                  }}
-                  onMouseMove={handleSwipeMove}
-                  onMouseUp={handleSwipeEnd}
-                  onMouseLeave={handleSwipeEnd}
                 >
-                  {/* 과목 헤더 버튼 */}
-                  <button
-                    onClick={() => {
-                      if (!isSubjectSwiped) {
-                        toggleSubjectExpand(subject.id);
-                      } else {
-                        closeSwipe();
-                      }
-                    }}
-                    className="w-full flex items-center gap-[8px] px-[12px] py-[10px] hover:bg-accent/50 transition-colors text-left"
-                  >
-                    <div
-                      className="w-[8px] h-[8px] rounded-full flex-shrink-0"
-                      style={{ backgroundColor: subject.color }}
-                    />
-                    <span className="flex-1 text-[13px] font-medium text-left">
-                      {subject.name}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {completedCount}/{subjectTodos.length}
-                    </span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
 
-                  {/* 펼쳐진 할 일 목록 - 과목과 함께 밀림 */}
-                  {isExpanded && (
-                    <div>
-                      {subjectTodos.map(todo => {
-                        const isTodoSwiped = swipedTodoId === todo.id;
+              {/* 펼쳐진 투두 목록 */}
+              {isExpanded && (
+                <div style={{ padding: '0 12px 8px 12px' }}>
+                  {subjectTodos.map(todo => {
+                    const isTodoSwiped = swipedTodoId === todo.id;
 
-                        return (
-                          <div key={todo.id} className="relative overflow-hidden" data-todo-item>
-                            {/* 삭제 버튼 배경 (개별 할일) */}
-                            <div
-                              className="absolute right-0 top-0 bottom-0 bg-destructive flex items-center justify-center"
-                              style={{ width: `${SWIPE_THRESHOLD}px` }}
-                            >
-                              <button
-                                onClick={() => handleDeleteTodo(todo.id)}
-                                className="w-full h-full flex items-center justify-center text-white"
-                              >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <polyline points="3 6 5 6 21 6" />
-                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                </svg>
-                              </button>
-                            </div>
+                    return (
+                      <div key={todo.id} style={{ position: 'relative', overflow: 'hidden' }} data-todo-item>
+                        {/* 삭제 버튼 배경 */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: `${SWIPE_THRESHOLD}px`,
+                            backgroundColor: '#d4183d',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <button
+                            onClick={() => handleDeleteTodo(todo.id)}
+                            style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', background: 'none', border: 'none', cursor: 'pointer' }}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                          </button>
+                        </div>
 
-                            {/* 할일 아이템 - 터치/마우스로 스와이프/드래그 */}
-                            <div
-                              className="relative flex items-center gap-[8px] px-[12px] py-[8px] pl-[28px] transition-transform bg-muted select-none"
-                              style={{
-                                transform: isTodoSwiped ? `translateX(-${swipeOffset}px)` : 'translateX(0)',
-                                transition: isSwipingRef.current ? 'none' : 'transform 0.2s ease-out'
-                              }}
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                touchStartPos.current = { x: e.clientX, y: e.clientY };
-                                dragDirectionDecided.current = false;
+                        {/* 투두 아이템 */}
+                        <div
+                          style={{
+                            position: 'relative',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '6px 0',
+                            paddingLeft: '4px',
+                            backgroundColor: 'white',
+                            userSelect: 'none',
+                            transform: isTodoSwiped ? `translateX(-${swipeOffset}px)` : 'translateX(0)',
+                            transition: isSwipingRef.current ? 'none' : 'transform 0.2s ease-out',
+                          }}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            touchStartPos.current = { x: e.clientX, y: e.clientY };
+                            dragDirectionDecided.current = false;
+                            swipeStartX.current = e.clientX;
+                            swipeCurrentX.current = e.clientX;
+                            isSwipingRef.current = true;
+                            swipeTargetRef.current = { type: 'todo', id: todo.id };
 
-                                // 스와이프 초기화
-                                swipeStartX.current = e.clientX;
-                                swipeCurrentX.current = e.clientX;
-                                isSwipingRef.current = true;
-                                swipeTargetRef.current = { type: 'todo', id: todo.id };
+                            const handleMouseMove = (moveE: MouseEvent) => {
+                              if (!touchStartPos.current) return;
+                              const deltaX = moveE.clientX - touchStartPos.current.x;
+                              const deltaY = moveE.clientY - touchStartPos.current.y;
 
-                                const handleMouseMove = (moveE: MouseEvent) => {
-                                  if (!touchStartPos.current) return;
+                              if (window.__todoDragActive) {
+                                setDragPosition({ x: moveE.clientX, y: moveE.clientY });
+                                window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
+                                window.dispatchEvent(new CustomEvent('todoDragMove', { detail: { x: moveE.clientX, y: moveE.clientY } }));
+                                return;
+                              }
 
-                                  const deltaX = moveE.clientX - touchStartPos.current.x;
-                                  const deltaY = moveE.clientY - touchStartPos.current.y;
+                              if (dragDirectionDecided.current && isSwipingRef.current && !window.__todoDragActive) {
+                                swipeCurrentX.current = moveE.clientX;
+                                const diff = swipeStartX.current - moveE.clientX;
+                                if (diff > 0) {
+                                  setSwipeOffset(Math.min(diff, SWIPE_THRESHOLD + 20));
+                                  setSwipedTodoId(todo.id);
+                                  setSwipedSubjectId(null);
+                                }
+                                return;
+                              }
 
-                                  // 이미 드래그 모드인 경우
-                                  if (window.__todoDragActive) {
-                                    setDragPosition({ x: moveE.clientX, y: moveE.clientY });
-                                    window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
-                                    window.dispatchEvent(new CustomEvent('todoDragMove', {
-                                      detail: { x: moveE.clientX, y: moveE.clientY }
-                                    }));
-                                    return;
-                                  }
-
-                                  // 이미 스와이프 모드로 결정된 경우
-                                  if (dragDirectionDecided.current && isSwipingRef.current && !window.__todoDragActive) {
+                              if (!dragDirectionDecided.current && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
+                                dragDirectionDecided.current = true;
+                                if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                                  if (deltaX < 0) {
                                     swipeCurrentX.current = moveE.clientX;
                                     const diff = swipeStartX.current - moveE.clientX;
                                     if (diff > 0) {
-                                      const offset = Math.min(diff, SWIPE_THRESHOLD + 20);
-                                      setSwipeOffset(offset);
+                                      setSwipeOffset(Math.min(diff, SWIPE_THRESHOLD + 20));
                                       setSwipedTodoId(todo.id);
                                       setSwipedSubjectId(null);
                                     }
-                                    return;
                                   }
-
-                                  if (!dragDirectionDecided.current && (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5)) {
-                                    dragDirectionDecided.current = true;
-
-                                    // 수평 이동이 수직보다 1.5배 이상 크면 스와이프
-                                    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-                                      // 스와이프 모드 - 왼쪽으로만
-                                      if (deltaX < 0) {
-                                        swipeCurrentX.current = moveE.clientX;
-                                        const diff = swipeStartX.current - moveE.clientX;
-                                        if (diff > 0) {
-                                          const offset = Math.min(diff, SWIPE_THRESHOLD + 20);
-                                          setSwipeOffset(offset);
-                                          setSwipedTodoId(todo.id);
-                                          setSwipedSubjectId(null);
-                                        }
-                                      }
-                                    } else {
-                                      // 드래그 모드
-                                      isSwipingRef.current = false;
-                                      window.__todoDragData = {
-                                        todoId: todo.id,
-                                        subjectId: todo.subjectId,
-                                        color: todo.color || '#86EFAC',
-                                        content: todo.content,
-                                      };
-                                      window.__todoDragActive = true;
-                                      window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
-                                      setIsDraggingToTimeline(true);
-                                      setDraggedTodo(todo);
-                                      setDragPosition({ x: moveE.clientX, y: moveE.clientY });
-                                      window.dispatchEvent(new CustomEvent('todoDragMove', {
-                                        detail: { x: moveE.clientX, y: moveE.clientY }
-                                      }));
-                                    }
-                                  }
-                                };
-
-                                const handleMouseUp = () => {
-                                  if (window.__todoDragActive) {
-                                    const pos = window.__todoDragPosition;
-                                    if (pos) {
-                                      window.dispatchEvent(new CustomEvent('todoDrop', {
-                                        detail: { x: pos.x, y: pos.y }
-                                      }));
-                                    }
-                                    setTimeout(() => {
-                                      setIsDraggingToTimeline(false);
-                                      setDraggedTodo(null);
-                                      setDragPosition(null);
-                                      window.__todoDragData = null;
-                                      window.__todoDragActive = false;
-                                      window.__todoDragPosition = null;
-                                    }, 0);
-                                  } else if (isSwipingRef.current) {
-                                    // 스와이프 종료
-                                    const diff = swipeStartX.current - swipeCurrentX.current;
-                                    if (diff > SWIPE_THRESHOLD) {
-                                      setSwipeOffset(SWIPE_THRESHOLD);
-                                    } else {
-                                      setSwipedTodoId(null);
-                                      setSwipedSubjectId(null);
-                                      setSwipeOffset(0);
-                                    }
-                                  }
-
-                                  isSwipingRef.current = false;
-                                  swipeTargetRef.current = null;
-                                  touchStartPos.current = null;
-                                  dragDirectionDecided.current = false;
-                                  document.removeEventListener('mousemove', handleMouseMove);
-                                  document.removeEventListener('mouseup', handleMouseUp);
-                                };
-
-                                document.addEventListener('mousemove', handleMouseMove);
-                                document.addEventListener('mouseup', handleMouseUp);
-                              }}
-                              onTouchStart={(e) => {
-                                e.stopPropagation();
-                                const touch = e.touches[0];
-                                touchStartPos.current = { x: touch.clientX, y: touch.clientY };
-                                dragDirectionDecided.current = false;
-                                handleSwipeStart(e, 'todo', todo.id);
-                              }}
-                              onTouchMove={(e) => {
-                                e.stopPropagation();
-                                const touch = e.touches[0];
-
-                                if (!touchStartPos.current) return;
-
-                                const deltaX = touch.clientX - touchStartPos.current.x;
-                                const deltaY = touch.clientY - touchStartPos.current.y;
-
-                                // 이미 드래그 모드인 경우
-                                if (window.__todoDragActive) {
-                                  e.preventDefault(); // 스크롤 방지
-                                  setDragPosition({ x: touch.clientX, y: touch.clientY });
-                                  window.__todoDragPosition = { x: touch.clientX, y: touch.clientY };
-                                  window.dispatchEvent(new CustomEvent('todoDragMove', {
-                                    detail: { x: touch.clientX, y: touch.clientY }
-                                  }));
-                                  return;
-                                }
-
-                                // 이미 스와이프 모드로 결정된 경우
-                                if (dragDirectionDecided.current) {
-                                  handleSwipeMove(e);
-                                  return;
-                                }
-
-                                // 방향 결정 (아직 결정되지 않은 경우) - 5px 이상 움직이면 판단
-                                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-                                  dragDirectionDecided.current = true;
-
-                                  // 수평 이동이 수직보다 1.5배 이상 크면 스와이프, 그 외는 타임라인 드래그
-                                  if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-                                    // 스와이프 모드
-                                    handleSwipeMove(e);
-                                  } else {
-                                    // 타임라인 드래그 모드 시작
-                                    e.preventDefault(); // 스크롤 방지
-                                    window.__todoDragData = {
-                                      todoId: todo.id,
-                                      subjectId: todo.subjectId,
-                                      color: todo.color || '#86EFAC',
-                                      content: todo.content,
-                                    };
-                                    window.__todoDragActive = true;
-                                    window.__todoDragPosition = { x: touch.clientX, y: touch.clientY };
-                                    setIsDraggingToTimeline(true);
-                                    setDraggedTodo(todo);
-                                    setDragPosition({ x: touch.clientX, y: touch.clientY });
-
-                                    // 즉시 이벤트 발생
-                                    window.dispatchEvent(new CustomEvent('todoDragMove', {
-                                      detail: { x: touch.clientX, y: touch.clientY }
-                                    }));
-                                  }
-                                }
-                              }}
-                              onTouchEnd={(e) => {
-                                e.stopPropagation();
-
-                                if (isDraggingToTimeline || window.__todoDragActive) {
-                                  // 드롭 이벤트 발생 - window 객체에서 최신 위치 사용
-                                  const pos = window.__todoDragPosition;
-                                  if (pos) {
-                                    window.dispatchEvent(new CustomEvent('todoDrop', {
-                                      detail: { x: pos.x, y: pos.y }
-                                    }));
-                                  }
-                                  // 이벤트 처리 후 상태 초기화
-                                  setTimeout(() => {
-                                    setIsDraggingToTimeline(false);
-                                    setDraggedTodo(null);
-                                    setDragPosition(null);
-                                    window.__todoDragData = null;
-                                    window.__todoDragActive = false;
-                                    window.__todoDragPosition = null;
-                                  }, 0);
                                 } else {
-                                  handleSwipeEnd();
+                                  isSwipingRef.current = false;
+                                  window.__todoDragData = { todoId: todo.id, subjectId: todo.subjectId, color: todo.color || '#86EFAC', content: todo.content };
+                                  window.__todoDragActive = true;
+                                  window.__todoDragPosition = { x: moveE.clientX, y: moveE.clientY };
+                                  setIsDraggingToTimeline(true);
+                                  setDraggedTodo(todo);
+                                  setDragPosition({ x: moveE.clientX, y: moveE.clientY });
+                                  window.dispatchEvent(new CustomEvent('todoDragMove', { detail: { x: moveE.clientX, y: moveE.clientY } }));
                                 }
+                              }
+                            };
 
-                                touchStartPos.current = null;
-                                dragDirectionDecided.current = false;
-                              }}
-                            >
-                              <button
-                                onClick={() => {
-                                  if (isTodoSwiped) {
-                                    closeSwipe();
-                                  } else {
-                                    onToggleTodo(todo.id);
-                                  }
-                                }}
-                                className={`w-[20px] h-[20px] rounded-[4px] border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                                  todo.isCompleted
-                                    ? 'bg-primary border-primary'
-                                    : 'border-border hover:border-primary'
-                                }`}
-                              >
-                                {todo.isCompleted && (
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                                    <polyline points="20 6 9 17 4 12" />
-                                  </svg>
-                                )}
-                              </button>
-
-                              {editingTodoId === todo.id ? (
-                                <div className="flex-1">
-                                  <input
-                                    ref={editInputRef}
-                                    type="text"
-                                    className="w-full text-[13px] bg-background border border-border rounded-[4px] px-[8px] py-[6px] outline-none focus:border-primary text-left"
-                                    value={editTodoContent}
-                                    onChange={(e) => setEditTodoContent(e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') handleEditTodo(todo.id);
-                                      if (e.key === 'Escape') {
-                                        setEditTodoContent('');
-                                        setEditingTodoId(null);
-                                      }
-                                    }}
-                                  />
-                                  <div className="flex justify-end gap-[8px] mt-[6px]">
-                                    <button
-                                      className="px-[10px] py-[4px] text-[11px] rounded-[4px] hover:bg-accent transition-colors"
-                                      onClick={() => {
-                                        setEditTodoContent('');
-                                        setEditingTodoId(null);
-                                      }}
-                                    >
-                                      취소
-                                    </button>
-                                    <button
-                                      className="px-[10px] py-[4px] text-[11px] bg-primary text-primary-foreground rounded-[4px] hover:bg-primary/90 transition-colors"
-                                      onClick={() => handleEditTodo(todo.id)}
-                                    >
-                                      완료
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      if (isTodoSwiped) {
-                                        closeSwipe();
-                                      } else {
-                                        startEditTodo(todo);
-                                      }
-                                    }}
-                                    className={`flex-1 text-[13px] text-left ${
-                                      todo.isCompleted ? 'line-through text-muted-foreground' : ''
-                                    }`}
-                                  >
-                                    {todo.content}
-                                  </button>
-
-                                  {/* 색상 원 버튼 */}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (colorPickerTodoId === todo.id) {
-                                        setColorPickerTodoId(null);
-                                        setColorPickerPosition(null);
-                                      } else {
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        setColorPickerPosition({
-                                          top: rect.bottom + 8,
-                                          right: window.innerWidth - rect.right,
-                                        });
-                                        setColorPickerTodoId(todo.id);
-                                      }
-                                    }}
-                                    className="w-[20px] h-[20px] rounded-full border-2 border-white/50 shadow-sm flex-shrink-0"
-                                    style={{ backgroundColor: todo.color || '#86EFAC' }}
-                                  />
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {/* 할 일 추가 - 인라인 */}
-                      {addingTodoSubjectId === subject.id ? (
-                        <div className="px-[12px] py-[8px] pl-[28px] bg-muted">
-                          <div className="flex items-center gap-[8px]">
-                            <div className="w-[20px] h-[20px]" />
-                            <input
-                              ref={todoInputRef}
-                              type="text"
-                              className="flex-1 text-[13px] bg-background border border-border rounded-[4px] px-[8px] py-[6px] outline-none focus:border-primary text-left"
-                              value={newTodoContent}
-                              onChange={(e) => setNewTodoContent(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleAddTodo(subject.id);
-                                if (e.key === 'Escape') {
-                                  setNewTodoContent('');
-                                  setAddingTodoSubjectId(null);
+                            const handleMouseUp = () => {
+                              if (window.__todoDragActive) {
+                                const pos = window.__todoDragPosition;
+                                if (pos) window.dispatchEvent(new CustomEvent('todoDrop', { detail: { x: pos.x, y: pos.y } }));
+                                setTimeout(() => {
+                                  setIsDraggingToTimeline(false);
+                                  setDraggedTodo(null);
+                                  setDragPosition(null);
+                                  window.__todoDragData = null;
+                                  window.__todoDragActive = false;
+                                  window.__todoDragPosition = null;
+                                }, 0);
+                              } else if (isSwipingRef.current) {
+                                const diff = swipeStartX.current - swipeCurrentX.current;
+                                if (diff > SWIPE_THRESHOLD) {
+                                  setSwipeOffset(SWIPE_THRESHOLD);
+                                } else {
+                                  setSwipedTodoId(null);
+                                  setSwipedSubjectId(null);
+                                  setSwipeOffset(0);
                                 }
-                              }}
-                              placeholder="할 일 입력..."
-                            />
-                          </div>
-                          <div className="flex justify-end gap-[8px] mt-[8px] ml-[28px]">
-                            <button
-                              className="px-[12px] py-[6px] text-[12px] rounded-[6px] hover:bg-accent transition-colors"
-                              onClick={() => {
-                                setNewTodoContent('');
-                                setAddingTodoSubjectId(null);
-                              }}
-                            >
-                              취소
-                            </button>
-                            <button
-                              className="px-[12px] py-[6px] text-[12px] bg-primary text-primary-foreground rounded-[6px] hover:bg-primary/90 transition-colors"
-                              onClick={() => handleAddTodo(subject.id)}
-                            >
-                              완료
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setAddingTodoSubjectId(subject.id)}
-                          className="w-full flex items-center gap-[8px] px-[12px] py-[8px] pl-[28px] text-[12px] text-muted-foreground hover:text-foreground bg-muted hover:bg-accent/50 transition-colors text-left"
+                              }
+                              isSwipingRef.current = false;
+                              swipeTargetRef.current = null;
+                              touchStartPos.current = null;
+                              dragDirectionDecided.current = false;
+                              document.removeEventListener('mousemove', handleMouseMove);
+                              document.removeEventListener('mouseup', handleMouseUp);
+                            };
+
+                            document.addEventListener('mousemove', handleMouseMove);
+                            document.addEventListener('mouseup', handleMouseUp);
+                          }}
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                            const touch = e.touches[0];
+                            touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+                            dragDirectionDecided.current = false;
+                            handleSwipeStart(e, 'todo', todo.id);
+                          }}
+                          onTouchMove={(e) => {
+                            e.stopPropagation();
+                            const touch = e.touches[0];
+                            if (!touchStartPos.current) return;
+                            const deltaX = touch.clientX - touchStartPos.current.x;
+                            const deltaY = touch.clientY - touchStartPos.current.y;
+
+                            if (window.__todoDragActive) {
+                              e.preventDefault();
+                              setDragPosition({ x: touch.clientX, y: touch.clientY });
+                              window.__todoDragPosition = { x: touch.clientX, y: touch.clientY };
+                              window.dispatchEvent(new CustomEvent('todoDragMove', { detail: { x: touch.clientX, y: touch.clientY } }));
+                              return;
+                            }
+                            if (dragDirectionDecided.current) { handleSwipeMove(e); return; }
+                            if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                              dragDirectionDecided.current = true;
+                              if (Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+                                handleSwipeMove(e);
+                              } else {
+                                e.preventDefault();
+                                window.__todoDragData = { todoId: todo.id, subjectId: todo.subjectId, color: todo.color || '#86EFAC', content: todo.content };
+                                window.__todoDragActive = true;
+                                window.__todoDragPosition = { x: touch.clientX, y: touch.clientY };
+                                setIsDraggingToTimeline(true);
+                                setDraggedTodo(todo);
+                                setDragPosition({ x: touch.clientX, y: touch.clientY });
+                                window.dispatchEvent(new CustomEvent('todoDragMove', { detail: { x: touch.clientX, y: touch.clientY } }));
+                              }
+                            }
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            if (isDraggingToTimeline || window.__todoDragActive) {
+                              const pos = window.__todoDragPosition;
+                              if (pos) window.dispatchEvent(new CustomEvent('todoDrop', { detail: { x: pos.x, y: pos.y } }));
+                              setTimeout(() => {
+                                setIsDraggingToTimeline(false);
+                                setDraggedTodo(null);
+                                setDragPosition(null);
+                                window.__todoDragData = null;
+                                window.__todoDragActive = false;
+                                window.__todoDragPosition = null;
+                              }, 0);
+                            } else {
+                              handleSwipeEnd();
+                            }
+                            touchStartPos.current = null;
+                            dragDirectionDecided.current = false;
+                          }}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                          </svg>
-                          할 일 추가
-                        </button>
-                      )}
+                          {/* 체크박스 (피그마 □ 스타일) */}
+                          <button
+                            onClick={() => {
+                              if (isTodoSwiped) { closeSwipe(); } else { onToggleTodo(todo.id); }
+                            }}
+                            style={{
+                              width: '16px',
+                              height: '16px',
+                              borderRadius: '3px',
+                              border: todo.isCompleted ? '2px solid #5d5957' : '1.5px solid #b0ada9',
+                              backgroundColor: todo.isCompleted ? '#5d5957' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              cursor: 'pointer',
+                              padding: 0,
+                            }}
+                          >
+                            {todo.isCompleted && (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </button>
+
+                          {editingTodoId === todo.id ? (
+                            <div style={{ flex: 1 }}>
+                              <input
+                                ref={editInputRef}
+                                type="text"
+                                style={{
+                                  width: '100%',
+                                  fontSize: '13px',
+                                  border: '1px solid #eeeeec',
+                                  borderRadius: '6px',
+                                  padding: '6px 8px',
+                                  outline: 'none',
+                                  fontFamily: 'Pretendard, sans-serif',
+                                }}
+                                value={editTodoContent}
+                                onChange={(e) => setEditTodoContent(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleEditTodo(todo.id);
+                                  if (e.key === 'Escape') { setEditTodoContent(''); setEditingTodoId(null); }
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (isTodoSwiped) { closeSwipe(); } else { startEditTodo(todo); }
+                              }}
+                              style={{
+                                flex: 1,
+                                fontSize: '13px',
+                                color: todo.isCompleted ? '#b0ada9' : '#5d5957',
+                                textDecoration: todo.isCompleted ? 'line-through' : 'none',
+                                textAlign: 'left',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: 0,
+                                fontFamily: 'Pretendard, sans-serif',
+                              }}
+                            >
+                              {todo.content}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* 투두 추가 */}
+                  {addingTodoSubjectId === subject.id ? (
+                    <div style={{ padding: '6px 0 0 4px' }}>
+                      <input
+                        ref={todoInputRef}
+                        type="text"
+                        style={{
+                          width: '100%',
+                          fontSize: '13px',
+                          border: '1px solid #eeeeec',
+                          borderRadius: '6px',
+                          padding: '6px 8px',
+                          outline: 'none',
+                          fontFamily: 'Pretendard, sans-serif',
+                        }}
+                        value={newTodoContent}
+                        onChange={(e) => setNewTodoContent(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleAddTodo(subject.id);
+                          if (e.key === 'Escape') { setNewTodoContent(''); setAddingTodoSubjectId(null); }
+                        }}
+                        placeholder="할 일 입력..."
+                      />
                     </div>
+                  ) : (
+                    <button
+                      onClick={() => setAddingTodoSubjectId(subject.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '6px 0 0 4px',
+                        fontSize: '13px',
+                        color: '#b0ada9',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontFamily: 'Pretendard, sans-serif',
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
                   )}
                 </div>
-              </div>
-            );
-          })
-        )}
-
-        {/* 과목 추가 - 인라인 */}
-        {isAddingSubject && (
-          <div className="px-[12px] py-[8px] border-b border-border">
-            <input
-              ref={subjectInputRef}
-              type="text"
-              className="w-full text-[13px] bg-background border border-border rounded-[4px] px-[8px] py-[6px] outline-none focus:border-primary text-left"
-              value={newSubjectName}
-              onChange={(e) => setNewSubjectName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddSubject();
-                if (e.key === 'Escape') {
-                  setNewSubjectName('');
-                  setIsAddingSubject(false);
-                }
-              }}
-              placeholder="과목명 입력..."
-            />
-            <div className="flex justify-end gap-[8px] mt-[8px]">
-              <button
-                className="px-[12px] py-[6px] text-[12px] rounded-[6px] hover:bg-accent transition-colors"
-                onClick={() => {
-                  setNewSubjectName('');
-                  setIsAddingSubject(false);
-                }}
-              >
-                취소
-              </button>
-              <button
-                className="px-[12px] py-[6px] text-[12px] bg-primary text-primary-foreground rounded-[6px] hover:bg-primary/90 transition-colors"
-                onClick={handleAddSubject}
-              >
-                완료
-              </button>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        );
+      })}
 
-      {/* 색상 선택 드롭다운 - fixed position으로 overflow 문제 해결 */}
+      {/* 과목 추가 */}
+      {isAddingSubject ? (
+        <div
+          style={{
+            backgroundColor: 'white',
+            border: '1px solid #eeeeec',
+            borderRadius: '10px',
+            padding: '12px',
+          }}
+        >
+          <input
+            ref={subjectInputRef}
+            type="text"
+            style={{
+              width: '100%',
+              fontSize: '14px',
+              border: '1px solid #eeeeec',
+              borderRadius: '6px',
+              padding: '8px',
+              outline: 'none',
+              fontFamily: 'Pretendard, sans-serif',
+            }}
+            value={newSubjectName}
+            onChange={(e) => setNewSubjectName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleAddSubject();
+              if (e.key === 'Escape') { setNewSubjectName(''); setIsAddingSubject(false); }
+            }}
+            placeholder="과목명 입력..."
+          />
+        </div>
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
+          <button
+            onClick={() => setIsAddingSubject(true)}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              border: 'none',
+              background: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#7c7875',
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* 색상 선택 드롭다운 */}
       {colorPickerTodoId && colorPickerPosition && (
         <>
-          {/* 배경 오버레이 - 클릭하면 닫힘 */}
           <div
-            className="fixed inset-0 z-40"
-            onClick={() => {
-              setColorPickerTodoId(null);
-              setColorPickerPosition(null);
-            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+            onClick={() => { setColorPickerTodoId(null); setColorPickerPosition(null); }}
           />
-          {/* 드롭다운 */}
           <div
-            className="fixed z-50 bg-card border border-border rounded-[8px] p-[8px] shadow-lg"
             style={{
+              position: 'fixed',
+              zIndex: 50,
+              backgroundColor: 'white',
+              border: '1px solid #eeeeec',
+              borderRadius: '8px',
+              padding: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               top: `${colorPickerPosition.top}px`,
               right: `${colorPickerPosition.right}px`,
             }}
           >
-            <div className="grid grid-cols-5 gap-[6px]">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
               {SUBJECT_COLORS.map((color) => {
                 const currentTodo = todos.find(t => t.id === colorPickerTodoId);
                 return (
@@ -803,10 +771,15 @@ export function TasksWidget({
                       setColorPickerTodoId(null);
                       setColorPickerPosition(null);
                     }}
-                    className={`w-[20px] h-[20px] rounded-full border-2 transition-transform hover:scale-110 ${
-                      currentTodo?.color === color ? 'border-primary' : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: color }}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: currentTodo?.color === color ? '2px solid #5d5957' : '2px solid transparent',
+                      backgroundColor: color,
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
                   />
                 );
               })}
@@ -815,18 +788,29 @@ export function TasksWidget({
         </>
       )}
 
-      {/* 터치 드래그 프리뷰 - Portal로 렌더링 */}
+      {/* 드래그 프리뷰 */}
       {isDraggingToTimeline && createPortal(
         <div
-          className="fixed z-[9999] pointer-events-none"
           style={{
+            position: 'fixed',
+            zIndex: 9999,
+            pointerEvents: 'none',
             left: dragPosition ? `${dragPosition.x - 40}px` : '50%',
             top: dragPosition ? `${dragPosition.y - 20}px` : '50%',
           }}
         >
           <div
-            className="px-[16px] py-[8px] rounded-[8px] shadow-lg text-white text-[13px] font-medium border-2 border-white"
-            style={{ backgroundColor: draggedTodo?.color || '#86EFAC' }}
+            style={{
+              padding: '6px 12px',
+              borderRadius: '6px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              color: 'white',
+              fontSize: '13px',
+              fontWeight: 500,
+              border: '2px solid white',
+              backgroundColor: draggedTodo?.color || '#86EFAC',
+              fontFamily: 'Pretendard, sans-serif',
+            }}
           >
             {draggedTodo?.content || '드래그 중...'}
           </div>
